@@ -1,0 +1,307 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>kube-controller-manager | TH5EED</title><meta name="author" content="TH5EED"><meta name="copyright" content="TH5EED"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="介绍 控制器，负责运行一些后台控制循环，并监视系统中的各个资源的状态  通常运行到master&#x2F;controll plane节点，包含多个控制器实例（如rs控制器，deploy控制器，node控制器，HPA等），每个控制器负责处理不同的资源  控制器实例以多个独立的控制回路运行   控制回路&#x2F;循环所有控制器都遵循一个通用的编排模式，即控制回路 12ps -ef | grep c">
+<meta property="og:type" content="article">
+<meta property="og:title" content="kube-controller-manager">
+<meta property="og:url" content="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/kube-controller-manager/index.html">
+<meta property="og:site_name" content="TH5EED">
+<meta property="og:description" content="介绍 控制器，负责运行一些后台控制循环，并监视系统中的各个资源的状态  通常运行到master&#x2F;controll plane节点，包含多个控制器实例（如rs控制器，deploy控制器，node控制器，HPA等），每个控制器负责处理不同的资源  控制器实例以多个独立的控制回路运行   控制回路&#x2F;循环所有控制器都遵循一个通用的编排模式，即控制回路 12ps -ef | grep c">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://th5eed.github.io/img/avatar.jpg">
+<meta property="article:published_time" content="2026-08-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-16T09:22:50.538Z">
+<meta property="article:author" content="TH5EED">
+<meta property="article:tag" content="cloud-native">
+<meta property="article:tag" content="kubernetes">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://th5eed.github.io/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "kube-controller-manager",
+  "url": "https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/kube-controller-manager/",
+  "image": "https://th5eed.github.io/img/avatar.jpg",
+  "datePublished": "2026-08-15T16:00:00.000Z",
+  "dateModified": "2026-08-16T09:22:50.538Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "TH5EED",
+      "url": "https://TH5EED.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/kube-controller-manager/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'kube-controller-manager',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">TH5EED</span></a><a class="nav-page-title" href="/"><span class="site-name">kube-controller-manager</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">kube-controller-manager</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-16T09:22:50.538Z" title="更新于 2026-08-16 17:22:50">2026-08-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/">云原生</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><ul>
+<li><p>控制器，负责运行一些后台控制循环，并监视系统中的各个资源的状态</p>
+</li>
+<li><p>通常运行到master&#x2F;controll plane节点，包含多个控制器实例（如rs控制器，deploy控制器，node控制器，HPA等），每个控制器负责处理不同的资源</p>
+</li>
+<li><p>控制器实例以多个独立的<strong>控制回路</strong>运行</p>
+</li>
+</ul>
+<h1 id="控制回路-循环"><a href="#控制回路-循环" class="headerlink" title="控制回路&#x2F;循环"></a>控制回路&#x2F;循环</h1><p>所有控制器都遵循一个通用的编排模式，即控制回路</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ps -ef | grep controller</span><br><span class="line">root        4221    4059  9 5月28 ?       10:32:05 kube-controller-manager...</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>kube-controller-manager</code>启动后会成为一个<strong>进程</strong></p>
+</li>
+<li><p>内部会为每一种控制器启动一个独立的的轻量级线程goroutin</p>
+</li>
+<li><p>每个轻量级线程goroutin运行着对应控制器的控制回路，并发执行，共享进程的内存空间，但逻辑独立</p>
+</li>
+</ul>
+<h2 id="Q：为什么这样设计，不能每个控制器都是一个进程吗"><a href="#Q：为什么这样设计，不能每个控制器都是一个进程吗" class="headerlink" title="Q：为什么这样设计，不能每个控制器都是一个进程吗"></a>Q：为什么这样设计，不能每个控制器都是一个进程吗</h2><ul>
+<li><p><strong>节省资源</strong>：如果每个控制器都运行一个独立进程，那么每个进程都要与 API Server 建立连接、维护认证信息，开销大。放在一个进程里，可以共享连接池、缓存等。</p>
+</li>
+<li><p><strong>便于管理</strong>：管理员只需管理一个组件（启动、停止、配置），而不是几十个。</p>
+</li>
+<li><p><strong>并发安全</strong>：通过 Informer 的本地缓存和 workqueue 机制，避免竞争条件。</p>
+</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://TH5EED.github.io">TH5EED</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/kube-controller-manager/">https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/kube-controller-manager/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://TH5EED.github.io" target="_blank">TH5EED</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/cloud-native/">cloud-native</a><a class="post-meta__tags" href="/tags/kubernetes/">kubernetes</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/%E5%9F%BA%E4%BA%8E%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C%E6%97%B6%E7%9A%84%E9%95%9C%E5%83%8F%E5%86%85%E5%AE%B9%E6%8F%90%E5%8F%96/" title="基于容器运行时的镜像内容提取"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">基于容器运行时的镜像内容提取</div></div><div class="info-2"><div class="info-item-1">🛠️ 通用方法论：基于容器运行时的镜像内容提取在云原生架构中，我们通常通过高层抽象（如 kubectl）来管理应用。但在底层运维、离线环境（Air-gapped）或紧急排障时，我们往往需要绕过 Kubernetes，直接与底层的容器运行时（如 containerd）交互，从镜像中提取我们需要的任何内容。 1. 核心适用场景这套方法不仅限于提取 etcdctl，它广泛适用于以下场景：  提取诊断工具：从包含特定工具的镜像中提取二进制文件（如从 busybox 提取 nsenter，从 curlimages/curl 提取 curl，从 nicolaka/netshoot 提取网络排查工具）。 提取配置与证书：在无法启动容器的情况下，检查镜像内预置的配置文件、TLS 证书或初始化脚本。 离线&#x2F;断网环境部署：在没有外部镜像仓库的情况下，通过挂载本地镜像来提取应用二进制文件，并在宿主机上直接运行。 安全审计与合规检查：在不启动可疑镜像的情况下，直接审查其文件系统结构、依赖库或敏感信息。  2. 通用操作范式（4步法）无论你要提取什么，都可以遵循以下标准化流程： 第一步：获取目...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/kubelet/" title="kubelet"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">kubelet</div></div><div class="info-2"><div class="info-item-1">node在k8s中指一个真实具有含义的API对象，k get nodes可以说明节点一词更为广泛，但一般也同上 一个新的node加入集群很容易：  在节点上安装kubelet、kube-proxy、CRI、CNI 将kubelet、kube-proxy的启动参数中api-server URL指向目标集群的api-server即可 api-server在接受kubelet的注册后，自动将此节点纳入到当前集群的调度范围中  主节点kubelet在集群初始化时、节点kubelet加入集群时需要配置一些参数，比如–cri-socket参数告诉CRI的socket在哪里以此通信 kubelet的注册  kubelet是每个节点上负责启动容器的重要的守护进程  启动时，该进程加载配置参数，向api-server处创建一个node对象来注册自身节点信息：  操作系统 内核版本 IP地址 总容量和可分配容量   定时（默认10s）向api-server汇报节点情况，这些信息会被调度器用来给节点打分  如果停止汇报，NodeLifecycle控制器会认为   </div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/kubelet/" title="kubelet"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">kubelet</div></div><div class="info-2"><div class="info-item-1">node在k8s中指一个真实具有含义的API对象，k get nodes可以说明节点一词更为广泛，但一般也同上 一个新的node加入集群很容易：  在节点上安装kubelet、kube-proxy、CRI、CNI 将kubelet、kube-proxy的启动参数中api-server URL指向目标集群的api-server即可 api-server在接受kubelet的注册后，自动将此节点纳入到当前集群的调度范围中  主节点kubelet在集群初始化时、节点kubelet加入集群时需要配置一些参数，比如–cri-socket参数告诉CRI的socket在哪里以此通信 kubelet的注册  kubelet是每个节点上负责启动容器的重要的守护进程  启动时，该进程加载配置参数，向api-server处创建一个node对象来注册自身节点信息：  操作系统 内核版本 IP地址 总容量和可分配容量   定时（默认10s）向api-server汇报节点情况，这些信息会被调度器用来给节点打分  如果停止汇报，NodeLifecycle控制器会认为   </div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/%E7%BB%84%E4%BB%B6%E4%B8%8E%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/" title="组件与进程关系"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">组件与进程关系</div></div><div class="info-2"><div class="info-item-1">k8s进程k8s系统组件，如kube-proxy、api-server、coredns等，本质工作都是进程  宿主机裸进程（传统方式）：直接以systemd服务或可执行文件跑在节点操作系统上。  容器化进程（现代主流）：把进程封装在容器里，再用 Static Pod 或 DaemonSet 来启动和维护。  例如：kube-proxy 在 kubeadm 集群中是以 DaemonSet 形式运行的 Pod，Pod 里只有一个 kube-proxy 进程。  再如：CoreDNS 是一个系统组件（DNS 服务），它以 Deployment 形式运行 Pod，Pod 里是 coredns 进程。     （附件缺失：assets&#x2F;组件与进程关系&#x2F;Pasted%20image%2020260610104914.png） Q：传统方式中的进程是怎么运行的？systemd服务或可执行文件和进程有什么关系？通过systemd服务，它是1号进程，管理维护当前所有服务的状态systemd使用 Q：为什么我的qfusion集群中没找到kube-proxy的pod，是因为关键在于...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/%E6%8E%A7%E5%88%B6%E5%99%A8/" title="控制器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">控制器</div></div><div class="info-2"><div class="info-item-1">详看kube-controller-manager用来不断地确保集群当前状态与期望状态（spec）保持一致  当一个pod损坏（可能所处节点损坏）时，控制器会重建一个pod来尽量满足期望  当一个pod的容器损坏（进程被杀死）时，只要pod的重载策略是always，pod就会重建一个新容器并重启，RESTARTS字段+1   任务模型分类 守护进程&#x2F;长期运行型：deploy，ds，sts  场景：数据库sts，web服务器deploy，监控代理ds  无状态服务：web服务器→deploy  有状态服务：数据库→sts  无状态服务的每个实例都是完全相同且可相互替换的。它本身不保存任何需要持久化的数据，每次处理请求都是独立的。它的“状态”通常保存在外部的数据库或缓存中  有状态服务需要持久化存储来保存数据，Pod重启或迁移后数据不能丢失。同时，它的每个实例通常需要一个稳定、唯一的网络标识，以便其他服务能准确找到它    批处理型：job，cronjob  场景：数据迁移，备份   二者区别在于对于pod的重启策略restartPolicy不同  Always：容器退出会...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/Service%E5%AE%9E%E9%AA%8C/" title="Service实验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">Service实验</div></div><div class="info-2"><div class="info-item-1">实验：Service 与 Endpoints 综合练习（含 ClusterIP、手动 Endpoints、NodePort）实验目标 理解带 selector 的 Service 自动管理 Endpoints，实现内部负载均衡。 掌握手动创建 Endpoints 将 Service 指向集群外部服务。 理解 port、targetPort、nodePort 的区别与映射关系。 学会用 NodePort 将服务暴露给集群外部客户端。  环境要求 可用的 Kubernetes 集群（minikube 或同类） kubectl、curl（建议在集群内临时运行 busybox 测试 Pod）   第一部分：自动关联后端的 Service（内部 Pod）1.1 部署后端 Pod1kubectl create deployment myweb --image=nginx --replicas=2  1.2 暴露为 ClusterIP Service1kubectl expose deployment myweb --port=80 --target-port=80 验证： 12kubectl...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/k8s%E5%AD%A6%E4%B9%A0%E6%B5%81%E7%A8%8B/" title="k8s学习流程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">k8s学习流程</div></div><div class="info-2"><div class="info-item-1">你已经掌握了 Kubernetes 中核心的 工作负载（控制器） 部分，能够管理各种 Pod 的生命周期和运行模式。接下来，自然要解决 Pod 如何被访问、配置如何管理、数据如何持久化 等问题。我根据实际应用的依赖关系，建议你按以下顺序深入：  🎯 推荐学习路线（由浅入深，每个主题都必备）   顺序 主题 核心作用 为什么在这步学    1 Service 为 Pod 提供稳定的网络访问入口（负载均衡、服务发现） Pod 会重启&#x2F;漂移，IP 变化，需要固定方式访问   2 Ingress 七层路由（域名、路径转发）到 Service 集群外部 HTTP&#x2F;HTTPS 流量接入   3 ConfigMap &#x2F; Secret 将配置、敏感信息与 Pod 解耦 不改镜像就能改配置，避免密码写死   4 Volume &amp; PVC &amp; StorageClass 容器数据持久化（Pod 重启不丢数据） 数据库、日志等场景必须   5 NetworkPolicy Pod 间网络隔离（防火墙规则） 安全性（零信任）必备   6 资源配额 &amp; ...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/%E5%AD%98%E5%82%A8%E5%AE%9E%E9%AA%8C/" title="存储实验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">存储实验</div></div><div class="info-2"><div class="info-item-1">把宿主机硬盘目录直接挂给容器用，并绑死节点防止Pod跑丢介绍你提到的这种用法，在 Kubernetes 生态中通常被称为 Node-Local Storage（节点本地存储） 模式。虽然 hostPath 是最原始的实现方式，但在高性能计算、AI 训练、边缘网关等场景中，它确实是“最佳选择”。 为了让你彻底理解，我们需要区分两个概念：  裸 hostPath：直接挂载宿主机路径（不推荐用于生产，但开发测试可用）。 Local Persistent Volume (Local PV)：K8s 官方推荐的、基于本地磁盘的 PV 抽象（底层本质还是 hostPath&#x2F;Block Device，但增加了拓扑感知调度）。  针对你说的“借助 nodeSelector 锁死节点实现高性能”，下面给出一个最典型、最硬核的场景：AI 模型训练&#x2F;推理缓存。 💡 具体场景：AI 推理服务的本地模型缓存背景：你有一个 LLM 推理服务（如 vLLM&#x2F;Ollama），模型文件高达 70GB。  如果用 NFS&#x2F;Ceph：每次 Pod 重启都要从网络拉取 70GB...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">TH5EED</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎常来坐坐，听听歌，聊聊天～</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E5%9B%9E%E8%B7%AF-%E5%BE%AA%E7%8E%AF"><span class="toc-number">2.</span> <span class="toc-text">控制回路&#x2F;循环</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Q%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E6%A0%B7%E8%AE%BE%E8%AE%A1%EF%BC%8C%E4%B8%8D%E8%83%BD%E6%AF%8F%E4%B8%AA%E6%8E%A7%E5%88%B6%E5%99%A8%E9%83%BD%E6%98%AF%E4%B8%80%E4%B8%AA%E8%BF%9B%E7%A8%8B%E5%90%97"><span class="toc-number">2.1.</span> <span class="toc-text">Q：为什么这样设计，不能每个控制器都是一个进程吗</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9AH3C%E4%BA%A4%E6%8D%A2%E6%9C%BA%E5%A0%86%E5%8F%A0/" title="TODO：H3C交换机堆叠">TODO：H3C交换机堆叠</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TCP%EF%BC%8CUDP/" title="TCP，UDP">TCP，UDP</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9A%E5%B8%B8%E7%94%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" title="TODO：常用网络模式">TODO：常用网络模式</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87/" title="网络设备">网络设备</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/Linux/%E5%AD%98%E5%82%A8%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/LVM/" title="LVM">LVM</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By TH5EED</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.6.1</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.1"></script><script src="/js/main.js?v=5.6.1"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'TH5EED/TH5EED.github.io',
+      'data-repo-id': 'R_kgDORsq4Zw',
+      'data-category-id': 'DIC_kwDORsq4Z84DB7rV',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

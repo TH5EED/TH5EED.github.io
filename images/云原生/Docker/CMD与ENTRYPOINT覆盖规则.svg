@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="640" viewBox="0 0 1040 640">
+  <style>
+    text { font-family: 'Microsoft YaHei','PingFang SC',sans-serif; }
+    .title { font-size: 23px; font-weight: bold; fill: #1f2d3d; }
+    .sub { font-size: 14px; fill: #555555; }
+    .code { font-family: Consolas,'Courier New',monospace; font-size: 14px; fill: #1f2d3d; }
+    .h { font-size: 14px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
+    .note { font-size: 12.5px; fill: #666666; }
+    .ok { font-size: 14px; font-weight: bold; fill: #27ae60; }
+    .bad { font-size: 14px; font-weight: bold; fill: #c0392b; }
+    .rowtag { font-size: 12.5px; font-weight: bold; }
+  </style>
+
+  <rect width="1040" height="640" fill="#ffffff"/>
+  <text x="520" y="38" text-anchor="middle" class="title">CMD vs ENTRYPOINT：docker run 的参数到底覆盖了谁？</text>
+  <text x="520" y="66" text-anchor="middle" class="sub">核心规则：docker run 带的参数会【整体替换 CMD】；若镜像定义了 ENTRYPOINT，参数替换 CMD 后【拼接到 ENTRYPOINT 之后】</text>
+
+  <!-- 表头 -->
+  <rect x="30" y="84" width="360" height="30" rx="4" fill="#34495e"/>
+  <text x="210" y="104" class="h">镜像里的配置（Dockerfile）</text>
+  <rect x="430" y="84" width="200" height="30" rx="4" fill="#34495e"/>
+  <text x="530" y="104" class="h">启动命令</text>
+  <rect x="670" y="84" width="340" height="30" rx="4" fill="#34495e"/>
+  <text x="840" y="104" class="h">实际执行的命令</text>
+
+  <!-- 行1 -->
+  <rect x="30" y="126" width="360" height="76" rx="6" fill="#eaf2f8" stroke="#2e86c1" stroke-width="2"/>
+  <text x="44" y="152" class="rowtag" fill="#2e86c1">只有 CMD</text>
+  <text x="44" y="180" class="code">CMD ["nginx", "-g", "daemon off;"]</text>
+
+  <rect x="430" y="126" width="200" height="76" rx="6" fill="#f8f9fa" stroke="#95a5a6"/>
+  <text x="444" y="168" class="code">docker run img</text>
+
+  <rect x="670" y="126" width="340" height="76" rx="6" fill="#eafaf1" stroke="#27ae60" stroke-width="2"/>
+  <text x="684" y="158" class="code">nginx -g "daemon off;"</text>
+  <text x="684" y="184" class="ok">✓ 正常：CMD 作为默认命令执行</text>
+
+  <!-- 行2 -->
+  <rect x="30" y="218" width="360" height="76" rx="6" fill="#eaf2f8" stroke="#2e86c1" stroke-width="2"/>
+  <text x="44" y="244" class="rowtag" fill="#2e86c1">只有 CMD</text>
+  <text x="44" y="272" class="code">CMD ["nginx", "-g", "daemon off;"]</text>
+
+  <rect x="430" y="218" width="200" height="76" rx="6" fill="#f8f9fa" stroke="#95a5a6"/>
+  <text x="444" y="260" class="code">docker run img -t</text>
+
+  <rect x="670" y="218" width="340" height="76" rx="6" fill="#fdedec" stroke="#c0392b" stroke-width="2"/>
+  <text x="684" y="250" class="code">-t</text>
+  <text x="684" y="276" class="bad">✗ CMD 被整体替换，"-t" 成了完整命令 → 报错</text>
+
+  <!-- 行3 -->
+  <rect x="30" y="310" width="360" height="92" rx="6" fill="#eafaf1" stroke="#27ae60" stroke-width="2"/>
+  <text x="44" y="336" class="rowtag" fill="#27ae60">ENTRYPOINT + CMD</text>
+  <text x="44" y="362" class="code">ENTRYPOINT ["nginx"]</text>
+  <text x="44" y="386" class="code">CMD ["-g", "daemon off;"]</text>
+
+  <rect x="430" y="310" width="200" height="92" rx="6" fill="#f8f9fa" stroke="#95a5a6"/>
+  <text x="444" y="360" class="code">docker run img</text>
+
+  <rect x="670" y="310" width="340" height="92" rx="6" fill="#eafaf1" stroke="#27ae60" stroke-width="2"/>
+  <text x="684" y="350" class="code">nginx -g "daemon off;"</text>
+  <text x="684" y="378" class="ok">✓ CMD 变成 ENTRYPOINT 的默认参数</text>
+
+  <!-- 行4 -->
+  <rect x="30" y="418" width="360" height="92" rx="6" fill="#eafaf1" stroke="#27ae60" stroke-width="2"/>
+  <text x="44" y="444" class="rowtag" fill="#27ae60">ENTRYPOINT + CMD</text>
+  <text x="44" y="470" class="code">ENTRYPOINT ["nginx"]</text>
+  <text x="44" y="494" class="code">CMD ["-g", "daemon off;"]</text>
+
+  <rect x="430" y="418" width="200" height="92" rx="6" fill="#f8f9fa" stroke="#95a5a6"/>
+  <text x="444" y="468" class="code">docker run img -t</text>
+
+  <rect x="670" y="418" width="340" height="92" rx="6" fill="#eafaf1" stroke="#27ae60" stroke-width="2"/>
+  <text x="684" y="458" class="code">nginx -t</text>
+  <text x="684" y="486" class="ok">✓ 参数只替换 CMD，ENTRYPOINT 稳如泰山</text>
+
+  <!-- 底部口诀 -->
+  <rect x="30" y="536" width="980" height="84" rx="8" fill="#fef9e7" stroke="#f39c12"/>
+  <text x="46" y="564" font-size="14.5" font-weight="bold" fill="#b9770e">记忆口诀：</text>
+  <text x="46" y="588" class="sub">CMD 是「默认命令」—— docker run 带了参数就让位（被整体替换）；</text>
+  <text x="46" y="608" class="sub">ENTRYPOINT 是「铁打的入口」—— 参数只是追加给它的实参。所以官方镜像常用 ENTRYPOINT + CMD 默认参数的组合。</text>
+</svg>

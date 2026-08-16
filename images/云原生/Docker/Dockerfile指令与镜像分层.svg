@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1020" height="660" viewBox="0 0 1020 660">
+  <style>
+    text { font-family: 'Microsoft YaHei','PingFang SC',sans-serif; }
+    .title { font-size: 23px; font-weight: bold; fill: #1f2d3d; }
+    .code { font-family: Consolas,'Courier New',monospace; font-size: 14.5px; fill: #e8eaed; }
+    .tagL { font-family: Consolas,monospace; font-size: 12px; fill: #f39c12; }
+    .tagM { font-family: Consolas,monospace; font-size: 12px; fill: #95a5a6; }
+    .bt { font-size: 14px; fill: #ffffff; text-anchor: middle; }
+    .btd { font-size: 14px; fill: #1f2d3d; text-anchor: middle; }
+    .bts { font-size: 12px; fill: #ffffff; text-anchor: middle; }
+    .note { font-size: 13.5px; fill: #555555; }
+    .noteb { font-size: 14px; font-weight: bold; fill: #1f2d3d; }
+    .lbl { font-size: 13px; fill: #2980b9; font-weight: bold; }
+  </style>
+
+  <rect width="1020" height="660" fill="#ffffff"/>
+  <text x="510" y="40" text-anchor="middle" class="title">Dockerfile 指令 → 镜像分层 → 容器可写层</text>
+
+  <!-- 左：Dockerfile -->
+  <text x="32" y="86" class="noteb">Dockerfile（构建脚本）</text>
+  <rect x="30" y="100" width="410" height="330" rx="8" fill="#2d3436"/>
+  <text x="46" y="132" class="code">FROM node:20-alpine</text>      <text x="272" y="132" class="tagL">← 基础层</text>
+  <text x="46" y="168" class="code">WORKDIR /app</text>            <text x="272" y="168" class="tagM">← 元数据，不产生层</text>
+  <text x="46" y="204" class="code">COPY package.json .</text>     <text x="272" y="204" class="tagL">← 产生新层</text>
+  <text x="46" y="240" class="code">RUN npm ci</text>              <text x="272" y="240" class="tagL">← 产生新层</text>
+  <text x="46" y="276" class="code">COPY . .</text>                <text x="272" y="276" class="tagL">← 产生新层</text>
+  <text x="46" y="312" class="code">RUN npm run build</text>       <text x="272" y="312" class="tagL">← 产生新层</text>
+  <text x="46" y="348" class="code">EXPOSE 3000</text>             <text x="272" y="348" class="tagM">← 元数据，不产生层</text>
+  <text x="46" y="384" class="code">CMD ["node","dist/main"]</text> <text x="304" y="384" class="tagM">← 元数据</text>
+
+  <rect x="30" y="450" width="410" height="84" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="44" y="474" class="note">① 只有改动文件系统的指令才产生真实层：RUN / COPY / ADD</text>
+  <text x="44" y="496" class="note">② ENV / WORKDIR / EXPOSE / CMD 等只写元数据（docker history 里是 0B）</text>
+  <text x="44" y="518" class="note">③ 镜像 = 一摞只读层 + 元数据清单</text>
+
+  <!-- 中：箭头 -->
+  <line x1="452" y1="265" x2="560" y2="265" stroke="#2980b9" stroke-width="3" marker-end="url(#arw)"/>
+  <defs>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#2980b9"/>
+    </marker>
+  </defs>
+  <text x="506" y="238" text-anchor="middle" class="lbl">docker build</text>
+  <text x="506" y="292" text-anchor="middle" class="note">逐行执行</text>
+  <text x="506" y="310" text-anchor="middle" class="note">逐层提交</text>
+
+  <!-- 右：层堆叠 -->
+  <text x="585" y="86" class="noteb">镜像层（自下而上堆叠，全部只读）</text>
+
+  <!-- 容器可写层 -->
+  <rect x="585" y="104" width="330" height="54" rx="6" fill="none" stroke="#e67e22" stroke-width="3" stroke-dasharray="8 5"/>
+  <text x="750" y="128" text-anchor="middle" font-size="14" font-weight="bold" fill="#e67e22">容器可写层（容器独有）</text>
+  <text x="750" y="148" text-anchor="middle" font-size="12" fill="#e67e22">docker run 时产生 · 删容器即丢失</text>
+
+  <text x="935" y="132" class="note">↑ 运行期叠加</text>
+
+  <!-- 元数据条 -->
+  <rect x="585" y="172" width="330" height="38" rx="6" fill="#ecf0f1" stroke="#95a5a6"/>
+  <text x="750" y="196" class="btd">元数据：WORKDIR / EXPOSE / CMD（0B）</text>
+
+  <!-- 层堆叠 -->
+  <rect x="585" y="224" width="330" height="50" rx="4" fill="#85c1e9"/>
+  <text x="750" y="254" class="btd">RUN npm run build</text>
+
+  <rect x="585" y="280" width="330" height="50" rx="4" fill="#5dade2"/>
+  <text x="750" y="310" class="bt">COPY . .（源码）</text>
+
+  <rect x="585" y="336" width="330" height="50" rx="4" fill="#2e86c1"/>
+  <text x="750" y="366" class="bt">RUN npm ci（依赖）</text>
+
+  <rect x="585" y="392" width="330" height="50" rx="4" fill="#21618c"/>
+  <text x="750" y="422" class="bt">COPY package.json</text>
+
+  <rect x="585" y="448" width="330" height="56" rx="4" fill="#1b2631"/>
+  <text x="750" y="472" class="bt">FROM node:20-alpine</text>
+  <text x="750" y="492" class="bts">基础镜像层（多个镜像可共享）</text>
+
+  <text x="585" y="536" class="note">同一镜像启动 N 个容器：只读层共享，各配一份可写层</text>
+
+  <!-- 底部：缓存规则 -->
+  <rect x="30" y="566" width="960" height="72" rx="8" fill="#fef9e7" stroke="#f39c12"/>
+  <text x="46" y="592" class="noteb" fill="#b9770e">缓存规则（面试高频）：</text>
+  <text x="46" y="614" class="note">自上而下逐条比对，某条指令变了 → 该层及其后所有层全部重建、缓存失效。</text>
+  <text x="46" y="632" class="note">所以：稳定的放前面（装依赖），易变的放最后（COPY 源码）。</text>
+</svg>

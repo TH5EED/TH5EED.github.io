@@ -1,0 +1,413 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Pod创建全流程 | TH5EED</title><meta name="author" content="TH5EED"><meta name="copyright" content="TH5EED"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="1. 用户请求 用户通过kubectl命令行工具或者api接口向api-server发送一个REST API请求  提交一个pod的定义，通常是yaml文件或json配置文件来描述pod的详细信息，包括容器镜像，环境变量，资源需求，卷挂载等   2.  api server接收请求 用户请求到达apiserver，后者对前者进行认证、鉴权和准入控制——3A检查  3. 持久化存储到etcd 一旦a">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pod创建全流程">
+<meta property="og:url" content="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/Pod%E5%88%9B%E5%BB%BA%E5%85%A8%E6%B5%81%E7%A8%8B/index.html">
+<meta property="og:site_name" content="TH5EED">
+<meta property="og:description" content="1. 用户请求 用户通过kubectl命令行工具或者api接口向api-server发送一个REST API请求  提交一个pod的定义，通常是yaml文件或json配置文件来描述pod的详细信息，包括容器镜像，环境变量，资源需求，卷挂载等   2.  api server接收请求 用户请求到达apiserver，后者对前者进行认证、鉴权和准入控制——3A检查  3. 持久化存储到etcd 一旦a">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://th5eed.github.io/img/avatar.jpg">
+<meta property="article:published_time" content="2026-08-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-16T09:22:50.539Z">
+<meta property="article:author" content="TH5EED">
+<meta property="article:tag" content="cloud-native">
+<meta property="article:tag" content="kubernetes">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://th5eed.github.io/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Pod创建全流程",
+  "url": "https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/Pod%E5%88%9B%E5%BB%BA%E5%85%A8%E6%B5%81%E7%A8%8B/",
+  "image": "https://th5eed.github.io/img/avatar.jpg",
+  "datePublished": "2026-08-15T16:00:00.000Z",
+  "dateModified": "2026-08-16T09:22:50.539Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "TH5EED",
+      "url": "https://TH5EED.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/Pod%E5%88%9B%E5%BB%BA%E5%85%A8%E6%B5%81%E7%A8%8B/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Pod创建全流程',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">TH5EED</span></a><a class="nav-page-title" href="/"><span class="site-name">Pod创建全流程</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Pod创建全流程</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-16T09:22:50.539Z" title="更新于 2026-08-16 17:22:50">2026-08-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/">云原生</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h5 id="1-用户请求"><a href="#1-用户请求" class="headerlink" title="1. 用户请求"></a>1. 用户请求</h5><ul>
+<li><p>用户通过kubectl命令行工具或者api接口向api-server发送一个REST API请求</p>
+</li>
+<li><p>提交一个pod的定义，通常是yaml文件或json配置文件来描述pod的详细信息，包括容器镜像，环境变量，资源需求，卷挂载等</p>
+</li>
+</ul>
+<h5 id="2-api-server接收请求"><a href="#2-api-server接收请求" class="headerlink" title="2.  api server接收请求"></a>2.  api server接收请求</h5><ul>
+<li>用户请求到达apiserver，后者对前者进行认证、鉴权和准入控制——3A检查</li>
+</ul>
+<h5 id="3-持久化存储到etcd"><a href="#3-持久化存储到etcd" class="headerlink" title="3. 持久化存储到etcd"></a>3. 持久化存储到etcd</h5><ul>
+<li><p>一旦apiserver验证了请求的有效性，会将pod的定义信息写入etcd（分布式键值存储），以确保集群内所有组件都能获取最新的集群状态</p>
+</li>
+<li><p>此时pod状态为“Pending”</p>
+</li>
+</ul>
+<h6 id="Q：什么是持久化？是否和“以确保集群内所有组件都能获取最新集群状态”有关？难道是持续更新状态？"><a href="#Q：什么是持久化？是否和“以确保集群内所有组件都能获取最新集群状态”有关？难道是持续更新状态？" class="headerlink" title="Ｑ：什么是持久化？是否和“以确保集群内所有组件都能获取最新集群状态”有关？难道是持续更新状态？"></a>Ｑ：什么是持久化？是否和“以确保集群内所有组件都能获取最新集群状态”有关？难道是持续更新状态？</h6><p>持久化是指确保<strong>数据不丢失（写入磁盘中）</strong>，状态同步是指确保所有组件<strong>看到相同数据（通过Watch机制）</strong></p>
+<ul>
+<li>多个etcd节点之间同步复制（通过Raft一致性算法）</li>
+<li>保证强一致性（所有节点看到相同的数据）</li>
+<li>etcd有变化时，api server会通过watch机制收到通知，并转化为API事件</li>
+<li>组件不需要知道 etcd的存在，只通过api server获取信息</li>
+</ul>
+<h6 id="Q：什么是Watch机制"><a href="#Q：什么是Watch机制" class="headerlink" title="Q：什么是Watch机制"></a>Q：什么是Watch机制</h6><p><strong>Watch &#x3D; 长连接 + 事件推送</strong>（替代轮询）</p>
+<table>
+<thead>
+<tr>
+<th>传统轮询</th>
+<th>Kubernetes Watch</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>客户端每秒问”有变化吗？”</td>
+<td>客户端建立长连接，等待推送</td>
+</tr>
+<tr>
+<td>浪费资源、延迟高</td>
+<td>实时、高效</td>
+</tr>
+<tr>
+<td>❌ 不适合大规模集群</td>
+<td>✅ 适合海量资源监控</td>
+</tr>
+</tbody></table>
+<h6 id="Q：apiserver-watch-etcd？所以确保组件看到相同数据的主语是api-server？所以这也解释了虽然数据存在了etcd中，但调度器，kubelet监听api-server获得最新信息？"><a href="#Q：apiserver-watch-etcd？所以确保组件看到相同数据的主语是api-server？所以这也解释了虽然数据存在了etcd中，但调度器，kubelet监听api-server获得最新信息？" class="headerlink" title="Q：apiserver watch etcd？所以确保组件看到相同数据的主语是api server？所以这也解释了虽然数据存在了etcd中，但调度器，kubelet监听api server获得最新信息？"></a>Q：apiserver watch etcd？所以确保组件看到相同数据的主语是api server？所以这也解释了虽然数据存在了etcd中，但调度器，kubelet监听api server获得最新信息？</h6><p>是的</p>
+<p>🔗 链路一（后端数据链路）：APIServer (客户端) vs etcd (服务端)</p>
+<ul>
+<li><p><strong>角色</strong>：APIServer 内部有一个叫做 <strong>Reflector（反射器）</strong> 的组件，它充当 <code>etcd</code> 的专属客户端。</p>
+</li>
+<li><p><strong>动作</strong>：APIServer 启动时，会向 etcd 发起 <strong>唯一的</strong> List-Watch 请求。</p>
+</li>
+<li><p><strong>目的</strong>：APIServer 通过这条链路，<strong>将etcd硬盘里的数据同步进APIServer自己的内存缓存（WatchCache）中</strong>。</p>
+</li>
+<li><p><strong>运维意义</strong>：这条链路<strong>只有1条</strong>。它确保了即使有几千个节点组件连接过来，etcd 也只承受这1个Watch连接的压力，极大地保护了磁盘IO敏感的etcd。</p>
+</li>
+</ul>
+<p>🔗 链路二（前端业务链路）：kube-proxy (客户端) vs APIServer (服务端)</p>
+<ul>
+<li><p><strong>角色</strong>：kube-proxy 内部的 client-go 库（同样是Reflector）充当 APIServer 的客户端。</p>
+</li>
+<li><p><strong>动作</strong>：每个节点上的 kube-proxy 都会向 APIServer 发起独立的 List-Watch 请求（带上过滤参数，只关注 Service 和 Endpoint）。</p>
+</li>
+<li><p><strong>目的</strong>：kube-proxy 通过这条链路，<strong>从APIServer的内存缓存（WatchCache）中拿到最新的业务数据</strong>，然后去修改本机的 iptables&#x2F;IPVS 规则。</p>
+</li>
+<li><p><strong>运维意义</strong>：这条链路有<strong>N条</strong>（取决于节点数量）。APIServer 负责管理这成千上万条长连接，并在内存中将数据分发给各个节点。</p>
+</li>
+</ul>
+<h5 id="4-调度决策"><a href="#4-调度决策" class="headerlink" title="4. 调度决策"></a>4. 调度决策</h5><ul>
+<li>当pod被创建并保存到etcd后，调度器通过Watch机制监听api server，发现未调度的pod（spec.nodeName为空），触发调度决策</li>
+<li>调度器根据集群节点的资源状况，亲和性和反亲和行规则以及其他约束条件，选择最适合该pod的节点，并更新pod状态为“Scheduled”</li>
+<li>将调度结果写回api server，再持久化写入etcd，所有组件通过Watch获取最新状态（即kubectl得知本节点被绑定）</li>
+</ul>
+<h6 id="Q：什么时候pod被创建了？什么叫api-server触发调度器？不是调度器监听api-server吗？pod的定义信息被写入etcd，调度器监听api-server干什么？"><a href="#Q：什么时候pod被创建了？什么叫api-server触发调度器？不是调度器监听api-server吗？pod的定义信息被写入etcd，调度器监听api-server干什么？" class="headerlink" title="Q：什么时候pod被创建了？什么叫api server触发调度器？不是调度器监听api server吗？pod的定义信息被写入etcd，调度器监听api server干什么？"></a>Q：什么时候pod被创建了？什么叫api server触发调度器？不是调度器监听api server吗？pod的定义信息被写入etcd，调度器监听api server干什么？</h6><p>此时pod为逻辑创建，即etcd中由pod的定义信息；调度器主动监听api server，发现未被调度的pod后执行调度</p>
+<h5 id="5-绑定pod到节点"><a href="#5-绑定pod到节点" class="headerlink" title="5. 绑定pod到节点"></a>5. 绑定pod到节点</h5><ul>
+<li>调度器将调度决定通知给api server，由后者将pod与节点进行绑定</li>
+</ul>
+<h5 id="6-kubelet执行"><a href="#6-kubelet执行" class="headerlink" title="6. kubelet执行"></a>6. kubelet执行</h5><ul>
+<li>相应节点上的kubelet进程通过监听api server事件，得知自己所在的节点需要创建新的pod</li>
+<li>kubelet从etcd中获取该pod的详细信息，然后开始执行创建pod的具体工作<ul>
+<li>下载容器镜像（CRI：pull image）</li>
+<li>创建网络名字空间和网络策略（<strong>CNI流程开始</strong>）</li>
+<li>设置pod的卷</li>
+<li>启动各容器（CRI：create&#x2F;start container）</li>
+</ul>
+</li>
+</ul>
+<h5 id="7-CNI网络配置流程"><a href="#7-CNI网络配置流程" class="headerlink" title="7. CNI网络配置流程"></a>7. CNI网络配置流程</h5><ol>
+<li>kubelet调用CRI创建pod sandbox（pause容器）<ul>
+<li>创建pause容器+网络名字空间（proc,pid,ns,net）</li>
+<li>此时并无IP，路由（网络未配置）</li>
+</ul>
+</li>
+<li>CRI调用libcni库<ul>
+<li>CRI会借助libcni库生成一个json文件描述网络插件如何配置和使用</li>
+</ul>
+</li>
+<li>libcni执行CNI插件（add命令）<ul>
+<li>构造stdin输入（json格式，包含容器id，netns路径等）</li>
+</ul>
+</li>
+<li>CNI插件实际工作<ul>
+<li>分配IP</li>
+<li>创建veth pair</li>
+<li>配置路由</li>
+<li>建立跨节点隧道（vxlan，bgp）</li>
+<li>stdout输出json（含IP，gateway，routes）</li>
+</ul>
+</li>
+<li>libcni接收插件输出，返回给CRI<ul>
+<li>CRI将IP注册到pod状态（status.podIP）</li>
+<li>kubelet上报给api server，再 持久化写入etcd</li>
+</ul>
+</li>
+</ol>
+<h5 id="8-启动业务容器（共享网络名字空间）"><a href="#8-启动业务容器（共享网络名字空间）" class="headerlink" title="8. 启动业务容器（共享网络名字空间）"></a>8. 启动业务容器（共享网络名字空间）</h5><ul>
+<li>CRI启动容器，复用pause容器的网络名字空间</li>
+<li>CRI监控容器的生命周期事件，如健康检查，重启策略等</li>
+</ul>
+<h6 id="Q：这是不是容器中钩子的工作？"><a href="#Q：这是不是容器中钩子的工作？" class="headerlink" title="Q：这是不是容器中钩子的工作？"></a>Q：这是不是容器中钩子的工作？</h6><p>钩子是容器启停的自定义逻辑，CRI管理容器的生命周期。二者不同</p>
+<h5 id="9-pod就绪和运行"><a href="#9-pod就绪和运行" class="headerlink" title="9. pod就绪和运行"></a>9. pod就绪和运行</h5><ul>
+<li>当所有容器均启动成功并通过了就绪探针检测，kubelet会将pod的状态报告给api server，标记pod为“running”状态</li>
+<li>此时的pod可以接收来自service的流量</li>
+</ul>
+<h5 id="10-持续监控与管理"><a href="#10-持续监控与管理" class="headerlink" title="10. 持续监控与管理"></a>10. 持续监控与管理</h5><ul>
+<li>在pod的整个生命周期内，kubelet和api server将持续监听pod的状态，并根据pod的定义和系统策略进行相应的管理和维护操作</li>
+<li>api server通过watch同步状态变化</li>
+<li>若容器异常退出，根据重启策略重新创建</li>
+<li>若用户删除pod<ol>
+<li>kubelet触发生命周期钩子</li>
+<li>调用CRI停止容器</li>
+<li>调用libcni执行CNI插件DEL命令清理网络</li>
+</ol>
+</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://TH5EED.github.io">TH5EED</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/Pod%E5%88%9B%E5%BB%BA%E5%85%A8%E6%B5%81%E7%A8%8B/">https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/Pod%E5%88%9B%E5%BB%BA%E5%85%A8%E6%B5%81%E7%A8%8B/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://TH5EED.github.io" target="_blank">TH5EED</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/cloud-native/">cloud-native</a><a class="post-meta__tags" href="/tags/kubernetes/">kubernetes</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/etcd/" title="etcd"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">etcd</div></div><div class="info-2"><div class="info-item-1">详看exp-etcd 原理etcd 是 K8s 的唯一数据存储（single source of truth）。 集群的一切状态——Pod&#x2F;Service&#x2F;ConfigMap&#x2F;Secret&#x2F;Node&#x2F;RBAC——全存在 etcd 里。 kube-apiserver 是 etcd 的唯一客户端，其余组件（scheduler&#x2F;controller-manager&#x2F;kubelet）都通过 apiserver 间接读写。 这意味着：  etcd 挂 &#x3D; 集群”脑死亡”：apiserver 无法读写 → kubectl 超时、无法调度新 Pod、controller-manager 无法 reconcile 但已运行 Pod 不会立即消失：kubelet 在本地缓存了 Pod 声明，etcd 挂了 kubelet 仍按缓存继续管理已运行容器 → 数据面（running pods）幸存于控制面故障  为什么 K8s 敢这么设计？这是 K8s “声明式 + 最终一致”架构的核心取舍：控制面和数据面解耦。etcd 挂...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/API/" title="API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">API</div></div><div class="info-2"><div class="info-item-1">本质API定义了“用户能说什么”，”用户能怎么说“，”会怎么回复用户“，屏蔽了复杂性点菜，用户只需要看着菜单，说吃什么菜，吃米饭或馒头，放不放香菜等，不需要关注怎么做出来 三大要素动词，methodsHTTP中常用增删改查GET&#x2F;POST&#x2F;PUT&#x2F;DELETEk8s中还有Watch监听，Proxy代理等 名词，resources对”什么“操作，比如用户数据，图片文件，pod，service，deployment 格式，schema</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/%E6%96%B0k8s%E9%83%A8%E7%BD%B2%E5%85%A8%E6%B5%81%E7%A8%8B/" title="新k8s部署全流程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">新k8s部署全流程</div></div><div class="info-2"><div class="info-item-1">K8s 组件版本推荐   组件 推荐版本 说明    Kubernetes 1.32.x 2026 年 8 月稳定版，文档丰富   containerd 2.3.3 已安装，不用降级；K8s 1.30+ 起官方支持   kubeadm&#x2F;kubelet&#x2F;kubectl 1.32.x 三者版本必须严格一致   Calico 3.29.x 或更新 按 Calico 官方对照表选对应 K8s 1.32 的版本   版本选择原则（面试可讲）：  kubeadm&#x2F;kubelet&#x2F;kubectl 小版本必须一致（如 1.32.x），大版本差 1 以内可容忍 containerd 2.x 已 GA，兼容 K8s 1.30+；学习集群直接保留已安装的 2.3.3 CNI（calico）版本与 K8s 版本对照表看官方文档   每台节点安装步骤（面试核心技能）这是你简历上”手动部署 K8s”的实操部分，每一步都要能讲清为什么。 第一步：加载内核模块 + 设置 sysctl（所有节点）1234567891011121314151617181920# 1. 加载内...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/%E7%BB%84%E4%BB%B6%E4%B8%8E%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/" title="组件与进程关系"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">组件与进程关系</div></div><div class="info-2"><div class="info-item-1">k8s进程k8s系统组件，如kube-proxy、api-server、coredns等，本质工作都是进程  宿主机裸进程（传统方式）：直接以systemd服务或可执行文件跑在节点操作系统上。  容器化进程（现代主流）：把进程封装在容器里，再用 Static Pod 或 DaemonSet 来启动和维护。  例如：kube-proxy 在 kubeadm 集群中是以 DaemonSet 形式运行的 Pod，Pod 里只有一个 kube-proxy 进程。  再如：CoreDNS 是一个系统组件（DNS 服务），它以 Deployment 形式运行 Pod，Pod 里是 coredns 进程。     （附件缺失：assets&#x2F;组件与进程关系&#x2F;Pasted%20image%2020260610104914.png） Q：传统方式中的进程是怎么运行的？systemd服务或可执行文件和进程有什么关系？通过systemd服务，它是1号进程，管理维护当前所有服务的状态systemd使用 Q：为什么我的qfusion集群中没找到kube-proxy的pod，是因为关键在于...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/%E9%85%8D%E7%BD%AE/" title="配置"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">配置</div></div><div class="info-2"><div class="info-item-1">跨服务内部文件一致方法共享（附件缺失：..&#x2F;assets&#x2F;配置&#x2F;Pasted%20image%2020260630104511.png） 共享服务器安装NFS服务，在多个服务所在机器安装NFS客户端，将共享目录挂载到本地目录 每次读取时，都会发生网络IO 没有文件大小限制 注入（附件缺失：..&#x2F;assets&#x2F;配置&#x2F;Pasted%20image%2020260630105215.png） 共享服务器一次注入后，多次读取，不再消耗网络IO 注入到nginx所在服务器本地，读取本地 注入是一次性的，静态的 只有将cm挂载为volume时，才可以热更新，并且环境变量不支持热更新 ConfigMap定义 非敏感的配置数据：环境变量，配置文件  明文形式  不超过1MiB  以注入方式将数据传递给pod   123456789101112k create cm &lt;cm-name&gt; --from-file=hongfu.file# -f后只能跟yaml,json文件# --from-file可以跟任意文件（文本，二进制），...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/k8s%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B/" title="k8s部署流程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">k8s部署流程</div></div><div class="info-2"><div class="info-item-1">环境初始化更换防火墙规则1234567891011# 关闭firewalldsystemctl stop firewalldsystemctl disable firewalld# 开启iptablesyum -y install iptables-servicessystemctl enable --now iptables# 删除所有规则持久化保存iptables -Fservice iptables save 禁用SELinux添加集群节点映射1234567cat &gt;&gt; /etc/hosts &lt;&lt;EOF# Kubernetes Cluster Nodes10.10.156.239 k8s0110.10.156.240 k8s0210.10.156.241 k8s03EOF  安装ipvsyum install -y ipvsadm 开启路由转发12345# 配置路由转发echo &#x27;net.ipv4.ip_forward=1&#x27; &gt;&gt; /etc/sysctl.conf  # 应用/etc/sysctl.conf中配置sys...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Docker/Docker%E9%83%A8%E7%BD%B2+%E7%8B%AC%E7%AB%8B%E5%AE%9E%E7%8E%B0Pod%E9%80%BB%E8%BE%91/" title="Docker独立实现Pod逻辑"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">Docker独立实现Pod逻辑</div></div><div class="info-2"><div class="info-item-1">环境初始化网卡配置123456789# 重新加载连接配置文件（/etc/NetworkManager/system-connetions/下）到内存中，让NetworkManager知道配置文件已改变nmcli c r ens160# 重新应用该设备的连接配置文件nmcli d r ens160# 或者直接重启连接（上面两种并不会断开连接）nmcli c down ens160nmcli c up ens160  换yum源yum源配置文件 更换防火墙规则123456789101112# 关闭firewalldsystemctl stop firewalldsystemctl disable firewalld# 开启iptablesyum -y install iptables-servicessystemctl start iptablessystemctl enable iptables# 删除所有规则持久化保存iptables -Fservice iptables save  禁用SELinuxSELinux 安装Docker环境加载网桥12345678910111213...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/Helm/" title="Helm"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">Helm</div></div><div class="info-2"><div class="info-item-1">介绍 go语言编写，github下载  是k8s的类yum的包管理工具  通过打包的方式，支持发布的版本管理和控制，简化了应用的部署和管理  本质是让应用管理可配置，动态生成   重要概念 Chart  是创建一个应用的信息集合，包括各种对象的配置模板、参数定义、依赖关系、文档说明等，  chart是应用部署的自包含逻辑单元，可以将chart想象成apt、yum中的软件  Release  是chart 的运行实例，代表了一个正在运行的应用，  当chart被安装到Kubernetes集群，就生成一个release，  chart能够多次安装到同一个集群，每次安装都是一个release  Helm cli  helm客户端组件，负责和kubernetes apiS通信  Repository  用于发布和存储 Chart的仓库   安装及演示安装12345678# 下载安装脚本curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3# 添加可执行权限c...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">TH5EED</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎常来坐坐，听听歌，聊聊天～</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E7%94%A8%E6%88%B7%E8%AF%B7%E6%B1%82"><span class="toc-number">1.</span> <span class="toc-text">1. 用户请求</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-api-server%E6%8E%A5%E6%94%B6%E8%AF%B7%E6%B1%82"><span class="toc-number">2.</span> <span class="toc-text">2.  api server接收请求</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E6%8C%81%E4%B9%85%E5%8C%96%E5%AD%98%E5%82%A8%E5%88%B0etcd"><span class="toc-number">3.</span> <span class="toc-text">3. 持久化存储到etcd</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Q%EF%BC%9A%E4%BB%80%E4%B9%88%E6%98%AF%E6%8C%81%E4%B9%85%E5%8C%96%EF%BC%9F%E6%98%AF%E5%90%A6%E5%92%8C%E2%80%9C%E4%BB%A5%E7%A1%AE%E4%BF%9D%E9%9B%86%E7%BE%A4%E5%86%85%E6%89%80%E6%9C%89%E7%BB%84%E4%BB%B6%E9%83%BD%E8%83%BD%E8%8E%B7%E5%8F%96%E6%9C%80%E6%96%B0%E9%9B%86%E7%BE%A4%E7%8A%B6%E6%80%81%E2%80%9D%E6%9C%89%E5%85%B3%EF%BC%9F%E9%9A%BE%E9%81%93%E6%98%AF%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%E7%8A%B6%E6%80%81%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">Ｑ：什么是持久化？是否和“以确保集群内所有组件都能获取最新集群状态”有关？难道是持续更新状态？</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#Q%EF%BC%9A%E4%BB%80%E4%B9%88%E6%98%AFWatch%E6%9C%BA%E5%88%B6"><span class="toc-number">3.2.</span> <span class="toc-text">Q：什么是Watch机制</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#Q%EF%BC%9Aapiserver-watch-etcd%EF%BC%9F%E6%89%80%E4%BB%A5%E7%A1%AE%E4%BF%9D%E7%BB%84%E4%BB%B6%E7%9C%8B%E5%88%B0%E7%9B%B8%E5%90%8C%E6%95%B0%E6%8D%AE%E7%9A%84%E4%B8%BB%E8%AF%AD%E6%98%AFapi-server%EF%BC%9F%E6%89%80%E4%BB%A5%E8%BF%99%E4%B9%9F%E8%A7%A3%E9%87%8A%E4%BA%86%E8%99%BD%E7%84%B6%E6%95%B0%E6%8D%AE%E5%AD%98%E5%9C%A8%E4%BA%86etcd%E4%B8%AD%EF%BC%8C%E4%BD%86%E8%B0%83%E5%BA%A6%E5%99%A8%EF%BC%8Ckubelet%E7%9B%91%E5%90%ACapi-server%E8%8E%B7%E5%BE%97%E6%9C%80%E6%96%B0%E4%BF%A1%E6%81%AF%EF%BC%9F"><span class="toc-number">3.3.</span> <span class="toc-text">Q：apiserver watch etcd？所以确保组件看到相同数据的主语是api server？所以这也解释了虽然数据存在了etcd中，但调度器，kubelet监听api server获得最新信息？</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-%E8%B0%83%E5%BA%A6%E5%86%B3%E7%AD%96"><span class="toc-number">4.</span> <span class="toc-text">4. 调度决策</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Q%EF%BC%9A%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99pod%E8%A2%AB%E5%88%9B%E5%BB%BA%E4%BA%86%EF%BC%9F%E4%BB%80%E4%B9%88%E5%8F%ABapi-server%E8%A7%A6%E5%8F%91%E8%B0%83%E5%BA%A6%E5%99%A8%EF%BC%9F%E4%B8%8D%E6%98%AF%E8%B0%83%E5%BA%A6%E5%99%A8%E7%9B%91%E5%90%ACapi-server%E5%90%97%EF%BC%9Fpod%E7%9A%84%E5%AE%9A%E4%B9%89%E4%BF%A1%E6%81%AF%E8%A2%AB%E5%86%99%E5%85%A5etcd%EF%BC%8C%E8%B0%83%E5%BA%A6%E5%99%A8%E7%9B%91%E5%90%ACapi-server%E5%B9%B2%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">4.1.</span> <span class="toc-text">Q：什么时候pod被创建了？什么叫api server触发调度器？不是调度器监听api server吗？pod的定义信息被写入etcd，调度器监听api server干什么？</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#5-%E7%BB%91%E5%AE%9Apod%E5%88%B0%E8%8A%82%E7%82%B9"><span class="toc-number">5.</span> <span class="toc-text">5. 绑定pod到节点</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-kubelet%E6%89%A7%E8%A1%8C"><span class="toc-number">6.</span> <span class="toc-text">6. kubelet执行</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#7-CNI%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E6%B5%81%E7%A8%8B"><span class="toc-number">7.</span> <span class="toc-text">7. CNI网络配置流程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-%E5%90%AF%E5%8A%A8%E4%B8%9A%E5%8A%A1%E5%AE%B9%E5%99%A8%EF%BC%88%E5%85%B1%E4%BA%AB%E7%BD%91%E7%BB%9C%E5%90%8D%E5%AD%97%E7%A9%BA%E9%97%B4%EF%BC%89"><span class="toc-number">8.</span> <span class="toc-text">8. 启动业务容器（共享网络名字空间）</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Q%EF%BC%9A%E8%BF%99%E6%98%AF%E4%B8%8D%E6%98%AF%E5%AE%B9%E5%99%A8%E4%B8%AD%E9%92%A9%E5%AD%90%E7%9A%84%E5%B7%A5%E4%BD%9C%EF%BC%9F"><span class="toc-number">8.1.</span> <span class="toc-text">Q：这是不是容器中钩子的工作？</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#9-pod%E5%B0%B1%E7%BB%AA%E5%92%8C%E8%BF%90%E8%A1%8C"><span class="toc-number">9.</span> <span class="toc-text">9. pod就绪和运行</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#10-%E6%8C%81%E7%BB%AD%E7%9B%91%E6%8E%A7%E4%B8%8E%E7%AE%A1%E7%90%86"><span class="toc-number">10.</span> <span class="toc-text">10. 持续监控与管理</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9AH3C%E4%BA%A4%E6%8D%A2%E6%9C%BA%E5%A0%86%E5%8F%A0/" title="TODO：H3C交换机堆叠">TODO：H3C交换机堆叠</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TCP%EF%BC%8CUDP/" title="TCP，UDP">TCP，UDP</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9A%E5%B8%B8%E7%94%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" title="TODO：常用网络模式">TODO：常用网络模式</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87/" title="网络设备">网络设备</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/Linux/%E5%AD%98%E5%82%A8%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/LVM/" title="LVM">LVM</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By TH5EED</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.6.1</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.1"></script><script src="/js/main.js?v=5.6.1"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'TH5EED/TH5EED.github.io',
+      'data-repo-id': 'R_kgDORsq4Zw',
+      'data-category-id': 'DIC_kwDORsq4Z84DB7rV',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

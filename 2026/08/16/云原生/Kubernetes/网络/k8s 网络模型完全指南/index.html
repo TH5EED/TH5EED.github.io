@@ -1,0 +1,503 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>k8s 网络模型完全指南 | TH5EED</title><meta name="author" content="TH5EED"><meta name="copyright" content="TH5EED"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从 Pod 通信到 Service 负载均衡 K8s 集群里几百个 Pod 是怎么互相通信的？Service 背后的负载均衡到底怎么实现？为什么 Pod 重启后 IP 就变了？本文把 K8s 网络的核心机制一次讲透，配图 + 命令 + YAML，看完就能上手。   一、K8s 网络的四条铁律K8s 网络看似复杂，但底层只有四条规则，所有网络插件都必须遵守：    规则 描述 一句话理解    所有">
+<meta property="og:type" content="article">
+<meta property="og:title" content="k8s 网络模型完全指南">
+<meta property="og:url" content="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E7%BD%91%E7%BB%9C/k8s%20%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97/index.html">
+<meta property="og:site_name" content="TH5EED">
+<meta property="og:description" content="从 Pod 通信到 Service 负载均衡 K8s 集群里几百个 Pod 是怎么互相通信的？Service 背后的负载均衡到底怎么实现？为什么 Pod 重启后 IP 就变了？本文把 K8s 网络的核心机制一次讲透，配图 + 命令 + YAML，看完就能上手。   一、K8s 网络的四条铁律K8s 网络看似复杂，但底层只有四条规则，所有网络插件都必须遵守：    规则 描述 一句话理解    所有">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://th5eed.github.io/img/avatar.jpg">
+<meta property="article:published_time" content="2026-08-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-16T09:22:50.549Z">
+<meta property="article:author" content="TH5EED">
+<meta property="article:tag" content="cloud-native">
+<meta property="article:tag" content="kubernetes">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://th5eed.github.io/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "k8s 网络模型完全指南",
+  "url": "https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E7%BD%91%E7%BB%9C/k8s%20%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97/",
+  "image": "https://th5eed.github.io/img/avatar.jpg",
+  "datePublished": "2026-08-15T16:00:00.000Z",
+  "dateModified": "2026-08-16T09:22:50.549Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "TH5EED",
+      "url": "https://TH5EED.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E7%BD%91%E7%BB%9C/k8s%20%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'k8s 网络模型完全指南',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">TH5EED</span></a><a class="nav-page-title" href="/"><span class="site-name">k8s 网络模型完全指南</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">k8s 网络模型完全指南</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-16T09:22:50.549Z" title="更新于 2026-08-16 17:22:50">2026-08-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/">云原生</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="从-Pod-通信到-Service-负载均衡"><a href="#从-Pod-通信到-Service-负载均衡" class="headerlink" title="从 Pod 通信到 Service 负载均衡"></a>从 Pod 通信到 Service 负载均衡</h1><blockquote>
+<p>K8s 集群里几百个 Pod 是怎么互相通信的？Service 背后的负载均衡到底怎么实现？为什么 Pod 重启后 IP 就变了？本文把 K8s 网络的核心机制一次讲透，配图 + 命令 + YAML，看完就能上手。</p>
+</blockquote>
+<hr>
+<h2 id="一、K8s-网络的四条铁律"><a href="#一、K8s-网络的四条铁律" class="headerlink" title="一、K8s 网络的四条铁律"></a>一、K8s 网络的四条铁律</h2><p>K8s 网络看似复杂，但底层只有<strong>四条规则</strong>，所有网络插件都必须遵守：</p>
+<table>
+<thead>
+<tr>
+<th>规则</th>
+<th>描述</th>
+<th>一句话理解</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>所有 Pod 直接通信</strong></td>
+<td>不需要 NAT</td>
+<td>同事之间直接喊名字</td>
+</tr>
+<tr>
+<td><strong>所有 Node 直接通信</strong></td>
+<td>不需要 NAT</td>
+<td>两个办公室之间走廊畅通</td>
+</tr>
+<tr>
+<td><strong>Pod IP &#x3D; 真实 IP</strong></td>
+<td>无地址转换</td>
+<td>你的手机号就是别人拨你的号</td>
+</tr>
+<tr>
+<td><strong>跨 Node Pod 直通</strong></td>
+<td>网络对 Pod 透明</td>
+<td>不同楼层的人感觉在同一层</td>
+</tr>
+</tbody></table>
+<p><strong>一句话总结：K8s 要的是一个”扁平网络”——所有 Pod 像在同一台交换机上。</strong></p>
+<p>Docker 默认的 bridge 网络用 NAT 做端口映射，违反了第一条规则。所以 K8s <strong>不用 Docker 网络方案</strong>，改用 CNI 插件。</p>
+<h2 id="二、Pod-是怎么通信的？"><a href="#二、Pod-是怎么通信的？" class="headerlink" title="二、Pod 是怎么通信的？"></a>二、Pod 是怎么通信的？</h2><h3 id="同节点：veth-pair-网桥"><a href="#同节点：veth-pair-网桥" class="headerlink" title="同节点：veth pair + 网桥"></a>同节点：veth pair + 网桥</h3><p>每个节点上有一个网桥（如 <code>cbr0</code>），每个 Pod 通过 <strong>veth pair</strong>（虚拟网线）连上去：</p>
+<p>┌─────────────── Node A ──────────────┐<br>│  ┌──────┐ veth ┌──────┐ veth ┌──┐  │<br>│  │Pod-1 │─────│ cbr0  │─────│P2│  │<br>│  │.1.2  │     │       │     │.3│  │<br>│  └──────┘     └───┬───┘     └──┘  │<br>│                  │ eth0            │<br>└──────────────────┼─────────────────┘<br>                   │<br>          物理网络（路由&#x2F;VXLAN）<br>                   │<br>┌──────────────────┼─────────────────┐<br>│                  │ eth0            │<br>│  ┌──────┐ veth ┌──┴───┐          │<br>│  │Pod-3 │─────│ cbr0  │          │<br>│  │.2.2  │     │       │          │<br>│  └──────┘     └───────┘          │<br>└────────────────────────────────────┘</p>
+<p>Pod-1 发包给 Pod-2 → 通过 veth 到网桥 → 按 MAC 转发 → Pod-2 收到。<strong>零开销，就跟同一台机器上一样。</strong></p>
+<h3 id="跨节点：三种方案"><a href="#跨节点：三种方案" class="headerlink" title="跨节点：三种方案"></a>跨节点：三种方案</h3><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>插件</th>
+<th>原理</th>
+<th>推荐场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>路由模式</strong></td>
+<td>Calico</td>
+<td>节点间路由表，直连转发</td>
+<td>⭐ 生产首选</td>
+</tr>
+<tr>
+<td><strong>Overlay</strong></td>
+<td>Flannel VXLAN</td>
+<td>物理网络套虚拟网络</td>
+<td>学习&#x2F;测试</td>
+</tr>
+<tr>
+<td><strong>eBPF</strong></td>
+<td>Cilium</td>
+<td>内核层面处理，绕过 iptables</td>
+<td>追求高性能</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 生产环境推荐 <strong>Calico</strong> 或 <strong>Cilium</strong>。Flannel 适合学习和测试，但功能有限。</p>
+</blockquote>
+<h2 id="三、Service：Pod-IP-总是变的怎么办？"><a href="#三、Service：Pod-IP-总是变的怎么办？" class="headerlink" title="三、Service：Pod IP 总是变的怎么办？"></a>三、Service：Pod IP 总是变的怎么办？</h2><p>Pod 的 IP 不固定（重建就变）、副本数动态变化、故障会迁移到其他节点。如果直接连 Pod IP，每次变化都要改配置——这不现实。</p>
+<p><strong>Service 就是解决方案</strong>：一个稳定的虚拟 IP + DNS 名称，自动负载均衡到后端 Pod。</p>
+<p>Client ──→ <strong>Service (ClusterIP: 10.96.0.100)</strong></p>
+<p>　　　　 + DNS: my-app.default.svc.cluster.local</p>
+<p>　　　　├──→ Pod-1 (10.244.1.2)</p>
+<p>　　　　├──→ Pod-2 (10.244.2.3)</p>
+<p>　　　　└──→ Pod-3 (10.244.2.5)</p>
+<h3 id="五种-Service-类型"><a href="#五种-Service-类型" class="headerlink" title="五种 Service 类型"></a>五种 Service 类型</h3><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>用途</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ClusterIP</strong>（默认）</td>
+<td>集群内部访问</td>
+<td>微服务互相调用</td>
+</tr>
+<tr>
+<td><strong>NodePort</strong></td>
+<td>每个节点开端口</td>
+<td>开发测试</td>
+</tr>
+<tr>
+<td><strong>LoadBalancer</strong></td>
+<td>云厂商负载均衡</td>
+<td>云上对外暴露</td>
+</tr>
+<tr>
+<td><strong>ExternalName</strong></td>
+<td>DNS 别名</td>
+<td>引用集群外服务</td>
+</tr>
+<tr>
+<td><strong>Headless</strong></td>
+<td>不分配 VIP</td>
+<td>StatefulSet</td>
+</tr>
+</tbody></table>
+<p>最常用的是 ClusterIP，一个 YAML 就搞定：</p>
+<p>apiVersion: v1<br>kind: Service<br>metadata:<br>  name: my-backend<br>spec:<br>  selector:<br>    app: my-backend  # 通过标签匹配后端 Pod<br>  ports:</p>
+<ul>
+<li>port: 80         # Service 端口<br>targetPort: 8080  # Pod 端口</li>
+</ul>
+<blockquote>
+<p>⚠️ NodePort 端口范围固定 30000-32767，生产环境别用它暴露服务。</p>
+</blockquote>
+<h2 id="四、kube-proxy：Service-背后的流量转发"><a href="#四、kube-proxy：Service-背后的流量转发" class="headerlink" title="四、kube-proxy：Service 背后的流量转发"></a>四、kube-proxy：Service 背后的流量转发</h2><p>Service 的 ClusterIP 怎么变成真实的 Pod IP 转发？答案是 <strong>kube-proxy</strong>。它运行在每个节点上，监听变化并动态配置网络规则。</p>
+<h3 id="三种代理模式"><a href="#三种代理模式" class="headerlink" title="三种代理模式"></a>三种代理模式</h3><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>原理</th>
+<th>性能</th>
+<th>推荐度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>iptables</strong></td>
+<td>随机概率规则</td>
+<td>O(n)，规则多时慢</td>
+<td>默认，小集群够用</td>
+</tr>
+<tr>
+<td><strong>IPVS</strong></td>
+<td>哈希表查找</td>
+<td>O(1)，多种调度算法</td>
+<td>⭐ 推荐</td>
+</tr>
+<tr>
+<td><strong>nftables</strong></td>
+<td>新一代防火墙</td>
+<td>优于 iptables</td>
+<td>K8s 1.29+</td>
+</tr>
+</tbody></table>
+<p>IPVS 支持轮询（rr）、最少连接（lc）、源地址哈希（sh）等算法，比 iptables 的随机概率更灵活。</p>
+<blockquote>
+<p>💡 建议：新集群直接用 <strong>IPVS 模式</strong>，后续扩展不用担心性能瓶颈。</p>
+</blockquote>
+<h3 id="Endpoints：Service-的”地址簿”"><a href="#Endpoints：Service-的”地址簿”" class="headerlink" title="Endpoints：Service 的”地址簿”"></a>Endpoints：Service 的”地址簿”</h3><p>kube-proxy 转发到的 Pod IP 来自 <strong>EndpointSlice</strong>（新版）。Pod 增减时自动更新，kube-proxy 感知后刷新规则。</p>
+<p>还可以<strong>手动创建 Endpoints 引用外部服务</strong>——让集群内 Pod 通过 Service 名访问外部 MySQL：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">external-db</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">3306</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Endpoints</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">external-db</span>  <span class="comment"># 必须和 Service 同名</span></span><br><span class="line"><span class="attr">subsets:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">addresses:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">ip:</span> <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">3306</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="五、DNS：为什么-Service-名能直接用？"><a href="#五、DNS：为什么-Service-名能直接用？" class="headerlink" title="五、DNS：为什么 Service 名能直接用？"></a>五、DNS：为什么 Service 名能直接用？</h2><p>K8s 内置 <strong>CoreDNS</strong>，自动为每个 Service 生成 DNS 记录。</p>
+<p>命名规则：<code>&lt;service&gt;.&lt;namespace&gt;.svc.cluster.local</code></p>
+<h1 id="完整域名"><a href="#完整域名" class="headerlink" title="完整域名"></a>完整域名</h1><p>my-backend.default.svc.cluster.local</p>
+<h1 id="同命名空间可省略"><a href="#同命名空间可省略" class="headerlink" title="同命名空间可省略"></a>同命名空间可省略</h1><p>my-backend</p>
+<p>Pod 的 <code>/etc/resolv.conf</code> 自动注入 DNS 配置，关键参数 <code>ndots:5</code> 决定了查询顺序——查 <code>my-backend</code> 时会自动拼 search 域，所以<strong>同命名空间内直接用 Service 名就行</strong>。</p>
+<p><strong>Headless Service</strong>（ClusterIP: None）不分配 VIP，DNS 直接返回所有 Pod IP 列表——StatefulSet 必须搭配 Headless Service，每个 Pod 有稳定 DNS：<code>mysql-0.mysql-headless.default.svc.cluster.local</code></p>
+<h2 id="六、Ingress：一个域名搞定多个服务"><a href="#六、Ingress：一个域名搞定多个服务" class="headerlink" title="六、Ingress：一个域名搞定多个服务"></a>六、Ingress：一个域名搞定多个服务</h2><p>多个 HTTP 服务要暴露到外网，每个开一个 NodePort？太乱了。<strong>Ingress</strong> 在七层做路由，按 Host + Path 分发：</p>
+<p><strong>api.example.com&#x2F;v1</strong> → api-service</p>
+<p><strong><a target="_blank" rel="noopener" href="http://www.example.com/">www.example.com/</a></strong>  → frontend-service</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">networking.k8s.io/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Ingress</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">main-ingress</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">ingressClassName:</span> <span class="string">nginx</span></span><br><span class="line">  <span class="attr">tls:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">hosts:</span> [<span class="string">api.example.com</span>, <span class="string">www.example.com</span>]</span><br><span class="line">    <span class="attr">secretName:</span> <span class="string">tls-secret</span></span><br><span class="line">  <span class="attr">rules:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">host:</span> <span class="string">api.example.com</span></span><br><span class="line">    <span class="attr">http:</span></span><br><span class="line">      <span class="attr">paths:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">/v1</span></span><br><span class="line">        <span class="attr">pathType:</span> <span class="string">Prefix</span></span><br><span class="line">        <span class="attr">backend:</span></span><br><span class="line">          <span class="attr">service:</span></span><br><span class="line">            <span class="attr">name:</span> <span class="string">api-service</span></span><br><span class="line">            <span class="attr">port:</span></span><br><span class="line">              <span class="attr">number:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>⚠️ Ingress 资源只是规则定义，真正干活的是 <strong>Ingress Controller</strong>（如 NGINX Ingress），需要额外部署。</p>
+</blockquote>
+<h2 id="七、NetworkPolicy：谁能跟谁说话？"><a href="#七、NetworkPolicy：谁能跟谁说话？" class="headerlink" title="七、NetworkPolicy：谁能跟谁说话？"></a>七、NetworkPolicy：谁能跟谁说话？</h2><p>K8s 默认网络<strong>全通</strong>——所有 Pod 可以互相访问。生产环境不够安全。</p>
+<p>NetworkPolicy 可以精细控制流量，比如”只允许 frontend 访问 api，api 只能访问 database”：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">networking.k8s.io/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">NetworkPolicy</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">api-policy</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">podSelector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">api</span></span><br><span class="line">  <span class="attr">policyTypes:</span> [<span class="string">Ingress</span>, <span class="string">Egress</span>]</span><br><span class="line">  <span class="attr">ingress:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">from:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">podSelector:</span></span><br><span class="line">        <span class="attr">matchLabels:</span></span><br><span class="line">          <span class="attr">app:</span> <span class="string">frontend</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">8080</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>⚠️ NetworkPolicy 依赖 CNI 插件支持！<strong>Flannel 默认不支持</strong>，需要 Calico、Cilium 等。</p>
+</blockquote>
+<h2 id="八、网络排查速查表"><a href="#八、网络排查速查表" class="headerlink" title="八、网络排查速查表"></a>八、网络排查速查表</h2><p>Pod 网络问题？<br>├── DNS 解析失败 → 检查 CoreDNS + resolv.conf + ndots<br>├── Service 不通 → 检查 Endpoints + selector 是否匹配<br>├── 同节点 Pod 不通 → 检查 CNI 网桥 + veth<br>├── 跨节点 Pod 不通 → 检查路由 + CNI + ip_forward<br>├── Pod 访问外网不通 → 检查 SNAT + iptables<br>└── 外部访问不通 → 检查 NodePort&#x2F;LoadBalancer&#x2F;Ingress</p>
+<p><strong>关键排查命令：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># DNS</span></span><br><span class="line">kubectl get pods -n kube-system -l k8s-app=kube-dns</span><br><span class="line">kubectl <span class="built_in">exec</span> &lt;pod&gt; -- <span class="built_in">cat</span> /etc/resolv.conf</span><br><span class="line"></span><br><span class="line"><span class="comment"># Service</span></span><br><span class="line">kubectl get endpoints &lt;service-name&gt;</span><br><span class="line">kubectl get svc &lt;service-name&gt; -o yaml | grep selector</span><br><span class="line"></span><br><span class="line"><span class="comment"># CNI</span></span><br><span class="line">kubectl get pods -n kube-system | grep -E <span class="string">&#x27;calico|cilium|flannel&#x27;</span></span><br><span class="line">ip route | grep 10.244</span><br></pre></td></tr></table></figure>
+
+<h2 id="九、核心要点"><a href="#九、核心要点" class="headerlink" title="九、核心要点"></a>九、核心要点</h2><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>解决什么问题</th>
+<th>推荐方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>CNI</strong></td>
+<td>Pod 网络连通</td>
+<td>Calico &#x2F; Cilium</td>
+</tr>
+<tr>
+<td><strong>Service</strong></td>
+<td>稳定 VIP + DNS</td>
+<td>ClusterIP + Ingress</td>
+</tr>
+<tr>
+<td><strong>kube-proxy</strong></td>
+<td>Service → Pod 转发</td>
+<td>IPVS 模式</td>
+</tr>
+<tr>
+<td><strong>CoreDNS</strong></td>
+<td>DNS 解析</td>
+<td>默认安装</td>
+</tr>
+<tr>
+<td><strong>Ingress</strong></td>
+<td>HTTP 七层路由</td>
+<td>NGINX Ingress</td>
+</tr>
+<tr>
+<td><strong>NetworkPolicy</strong></td>
+<td>网络隔离</td>
+<td>按需配置</td>
+</tr>
+</tbody></table>
+<p><strong>请求路径全景：</strong></p>
+<p>**外部：**Client → Ingress → Service → kube-proxy → Pod</p>
+<p>**内部：**Pod A → CoreDNS → Service → kube-proxy → Pod B</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://TH5EED.github.io">TH5EED</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E7%BD%91%E7%BB%9C/k8s%20%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97/">https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E7%BD%91%E7%BB%9C/k8s%20%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://TH5EED.github.io" target="_blank">TH5EED</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/cloud-native/">cloud-native</a><a class="post-meta__tags" href="/tags/kubernetes/">kubernetes</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/16/%E8%87%AA%E5%8A%A8%E5%8C%96/Shell/%E9%A1%B9%E7%9B%AE%EF%BC%9A%E5%AE%89%E8%A3%85%E5%89%8D%E6%A3%80%E6%9F%A5%E9%A1%B9/precheck.sh%E5%AE%8C%E6%95%B4%E8%AE%B2%E8%A7%A3/" title="precheck.sh完整讲解"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">precheck.sh完整讲解</div></div><div class="info-2"><div class="info-item-1">第 0 步：先认识”脚本”本身知识点 1：Shebang（脚本头）1#!/bin/bash 这是脚本的第一行，意思是”用 /bin/bash 这个程序来解释执行我后面的内容”。#! 叫 shebang。没有它，系统不知道用哪个 shell 来跑。 知识点 2：注释# 开头到行尾都是注释，机器忽略，给人看的。脚本里大段的 # ==== 和说明文字都是注释。  第 1 步：变量（脚本的”容器”）知识点 3：变量赋值与引用12SCRIPT_DIR=&quot;$(cd &quot;$(dirname &quot;$&#123;BASH_SOURCE[0]&#125;&quot;)&quot; &amp;&amp; pwd)&quot;APPLY_MODE=&quot;false&quot;  变量名=值（等号两边不能留空格，A = 1 是错的）。 用 $变量名 或 ${变量名} 取它的值。脚本里大量用 ${LIB_DIR}/base.sh 这种拼路径。 ${} 比 $ 更安全，能加花括号避免歧义、还能做”字符串加工”（后面会讲）。  知识点 4：命令替换 $(...)$(命令) 表示”...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/%E9%80%9A%E8%BF%87%20ctr%20%E6%8C%82%E8%BD%BD%E9%95%9C%E5%83%8F%E6%8F%90%E5%8F%96%20etcdctl/" title="通过 ctr 挂载镜像提取 etcdctl"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">通过 ctr 挂载镜像提取 etcdctl</div></div><div class="info-2"><div class="info-item-1">📌 核心概念与原理在 Kubernetes 集群运维中，我们经常需要操作 etcd（如备份、恢复、查看键值）。但在某些精简版的 Kubernetes 安装（如 kubeadm）或容器化部署中，宿主机上可能没有安装 etcdctl 客户端工具。 这招属于： 容器运行时层级的镜像内省与内容提取。 它利用了 containerd 的 ctr 工具，绕过 Docker 或 Kubelet，直接将镜像的文件系统层（Layer）挂载到宿主机目录。这允许我们在不启动容器的情况下，直接访问镜像内的二进制文件。 ⚠️ 使用前提与注意事项 权限要求：必须拥有宿主机的 root 权限或 sudo 权限。 运行时环境：节点必须使用 containerd 作为容器运行时（如果是 Docker-shim 或 CRI-O，命令略有不同）。 命名空间陷阱： crictl 看到的镜像通常属于 CRI 管理的命名空间（通常是 k8s.io）。 ctr 默认查看的是 default 命名空间。 关键点：必须使用 -n k8s.io 参数指定命名空间，否则会报错 image not found。   镜像状态：目标镜...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C/" title="网络"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">网络</div></div><div class="info-2"><div class="info-item-1">核心网络设计原则 所有Pod无需NAT即可直接通信（IP可达） Pod与Node之间也可直接通信 每个Pod拥有独立的IP，且此IP在整个集群全局唯一，可路由  这就被称为扁平网络，即所有Pod像在同一台交换机上 GCE（理想）在Google Compute Engine里，默认支持该原则，无需额外配置网络插件即可满足扁平网络要求 私有云和自建机房（现实）问题所在 各节点处于不同子网或隔离 VLAN 节点间默认不能直接路由 Pod IP Docker 默认用 docker0 网桥（仅本机 Pod 互通，跨节点不通，违反了第一条扁平原则）  解决方案 部署 CNI 插件（如 Calico&#x2F;Cilium&#x2F;Flannel）→ 实现跨节点 Pod 通信  Flannel：用 VXLAN 或 Host-GW 封装 Pod 流量 Calico：用 BGP 或 IPIP 实现三层路由 Cilium：基于 eBPF 实现高性能网络策略与路由   确保网络连通性前置  在启动 kubelet 之前，必须确保 所有节点能互相访问（Node ↔ Node） Pod IP 能在节点间...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/%E5%AD%98%E5%82%A8%E5%AE%9E%E9%AA%8C/" title="存储实验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">存储实验</div></div><div class="info-2"><div class="info-item-1">把宿主机硬盘目录直接挂给容器用，并绑死节点防止Pod跑丢介绍你提到的这种用法，在 Kubernetes 生态中通常被称为 Node-Local Storage（节点本地存储） 模式。虽然 hostPath 是最原始的实现方式，但在高性能计算、AI 训练、边缘网关等场景中，它确实是“最佳选择”。 为了让你彻底理解，我们需要区分两个概念：  裸 hostPath：直接挂载宿主机路径（不推荐用于生产，但开发测试可用）。 Local Persistent Volume (Local PV)：K8s 官方推荐的、基于本地磁盘的 PV 抽象（底层本质还是 hostPath&#x2F;Block Device，但增加了拓扑感知调度）。  针对你说的“借助 nodeSelector 锁死节点实现高性能”，下面给出一个最典型、最硬核的场景：AI 模型训练&#x2F;推理缓存。 💡 具体场景：AI 推理服务的本地模型缓存背景：你有一个 LLM 推理服务（如 vLLM&#x2F;Ollama），模型文件高达 70GB。  如果用 NFS&#x2F;Ceph：每次 Pod 重启都要从网络拉取 70GB...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/%E5%BA%94%E7%94%A8%E9%83%A8%E7%BD%B2%E6%96%B9%E5%BC%8F%E7%9A%84%E8%BF%AD%E4%BB%A3/" title="应用部署方式的迭代"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">应用部署方式的迭代</div></div><div class="info-2"><div class="info-item-1">（附件缺失：..&#x2F;assets&#x2F;应用部署方式的迭代&#x2F;Pasted%20image%2020260520142656.png）  传统部署自己买服务器 → 装机房 → 接网络 → 装系统 → 部署应用  IaaS：Infrastructure 基础设施即服务提供方提供了服务器，机房 ，存储设备，网络设备和虚拟化技术用户只需要负责装系统，中间件，环境，应用部署，数据管理，安全补丁和监控   相关工具：OpenStack，ZSatck（直接通过命令行或管理平台页面创建所需规格的虚拟机）（附件缺失：..&#x2F;assets&#x2F;应用部署方式的迭代&#x2F;Pasted%20image%2020260520142714.png）  PaaS：Platform 平台即服务提供方提供IaaS层所有服务以及操作系统，数据库，中间件，开发工具和容器化技术用户只需要负责应用代码编写，业务逻辑等“领包入住即可”  相关平台：k8s，docker swarm </div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/%E6%96%B0k8s%E9%83%A8%E7%BD%B2%E5%85%A8%E6%B5%81%E7%A8%8B/" title="新k8s部署全流程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">新k8s部署全流程</div></div><div class="info-2"><div class="info-item-1">K8s 组件版本推荐   组件 推荐版本 说明    Kubernetes 1.32.x 2026 年 8 月稳定版，文档丰富   containerd 2.3.3 已安装，不用降级；K8s 1.30+ 起官方支持   kubeadm&#x2F;kubelet&#x2F;kubectl 1.32.x 三者版本必须严格一致   Calico 3.29.x 或更新 按 Calico 官方对照表选对应 K8s 1.32 的版本   版本选择原则（面试可讲）：  kubeadm&#x2F;kubelet&#x2F;kubectl 小版本必须一致（如 1.32.x），大版本差 1 以内可容忍 containerd 2.x 已 GA，兼容 K8s 1.30+；学习集群直接保留已安装的 2.3.3 CNI（calico）版本与 K8s 版本对照表看官方文档   每台节点安装步骤（面试核心技能）这是你简历上”手动部署 K8s”的实操部分，每一步都要能讲清为什么。 第一步：加载内核模块 + 设置 sysctl（所有节点）1234567891011121314151617181920# 1. 加载内...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/k8s%E4%BB%8B%E7%BB%8D/" title="k8s介绍"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">k8s介绍</div></div><div class="info-2"><div class="info-item-1">优势 服务发现和负载均衡创建一个svc资源即可替代“手动搭建nginx作为负载调度器，用户请求被负载到不同的apache”  存储编排（添加任何本地或云服务器）一条命令就可以使用存储的资源；云服务器还可以按量收费  自动部署和回滚定义一个job检测远程代码仓库，有更新就调用k8s接口实现自动部署；回滚版本  自动分配CPU&#x2F;内存资源-弹性收缩自动挑选最合适节点  自我修复（需要时启动新容器）重启pod代价足够小  secret和配置管理敏感信息编码  支持大型规模  开源   微观架构微观架构图 组件 API Server k8s的核心接口和控制中枢，负责处理所有外部请求和内部组件通信  web UI  官方本身不配置，但可以安装dashboard组件  kubectl 客户端工具  Scheduler 控制器  Controller Manager(Replication Controller) 调度器    etcd 分布式键值存储来自API Server理解的数据，持久化保存集群的完整状态数据，Raft选举机制保证高可用，需要节点奇数个  kubelet 承上启下...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/API/" title="API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">API</div></div><div class="info-2"><div class="info-item-1">本质API定义了“用户能说什么”，”用户能怎么说“，”会怎么回复用户“，屏蔽了复杂性点菜，用户只需要看着菜单，说吃什么菜，吃米饭或馒头，放不放香菜等，不需要关注怎么做出来 三大要素动词，methodsHTTP中常用增删改查GET&#x2F;POST&#x2F;PUT&#x2F;DELETEk8s中还有Watch监听，Proxy代理等 名词，resources对”什么“操作，比如用户数据，图片文件，pod，service，deployment 格式，schema</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">TH5EED</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎常来坐坐，听听歌，聊聊天～</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8E-Pod-%E9%80%9A%E4%BF%A1%E5%88%B0-Service-%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="toc-number">1.</span> <span class="toc-text">从 Pod 通信到 Service 负载均衡</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81K8s-%E7%BD%91%E7%BB%9C%E7%9A%84%E5%9B%9B%E6%9D%A1%E9%93%81%E5%BE%8B"><span class="toc-number">1.1.</span> <span class="toc-text">一、K8s 网络的四条铁律</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Pod-%E6%98%AF%E6%80%8E%E4%B9%88%E9%80%9A%E4%BF%A1%E7%9A%84%EF%BC%9F"><span class="toc-number">1.2.</span> <span class="toc-text">二、Pod 是怎么通信的？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E8%8A%82%E7%82%B9%EF%BC%9Aveth-pair-%E7%BD%91%E6%A1%A5"><span class="toc-number">1.2.1.</span> <span class="toc-text">同节点：veth pair + 网桥</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%A8%E8%8A%82%E7%82%B9%EF%BC%9A%E4%B8%89%E7%A7%8D%E6%96%B9%E6%A1%88"><span class="toc-number">1.2.2.</span> <span class="toc-text">跨节点：三种方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Service%EF%BC%9APod-IP-%E6%80%BB%E6%98%AF%E5%8F%98%E7%9A%84%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9F"><span class="toc-number">1.3.</span> <span class="toc-text">三、Service：Pod IP 总是变的怎么办？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E7%A7%8D-Service-%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.3.1.</span> <span class="toc-text">五种 Service 类型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81kube-proxy%EF%BC%9AService-%E8%83%8C%E5%90%8E%E7%9A%84%E6%B5%81%E9%87%8F%E8%BD%AC%E5%8F%91"><span class="toc-number">1.4.</span> <span class="toc-text">四、kube-proxy：Service 背后的流量转发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.4.1.</span> <span class="toc-text">三种代理模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Endpoints%EF%BC%9AService-%E7%9A%84%E2%80%9D%E5%9C%B0%E5%9D%80%E7%B0%BF%E2%80%9D"><span class="toc-number">1.4.2.</span> <span class="toc-text">Endpoints：Service 的”地址簿”</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81DNS%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88-Service-%E5%90%8D%E8%83%BD%E7%9B%B4%E6%8E%A5%E7%94%A8%EF%BC%9F"><span class="toc-number">1.5.</span> <span class="toc-text">五、DNS：为什么 Service 名能直接用？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E5%9F%9F%E5%90%8D"><span class="toc-number">2.</span> <span class="toc-text">完整域名</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8C%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E5%8F%AF%E7%9C%81%E7%95%A5"><span class="toc-number">3.</span> <span class="toc-text">同命名空间可省略</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81Ingress%EF%BC%9A%E4%B8%80%E4%B8%AA%E5%9F%9F%E5%90%8D%E6%90%9E%E5%AE%9A%E5%A4%9A%E4%B8%AA%E6%9C%8D%E5%8A%A1"><span class="toc-number">3.1.</span> <span class="toc-text">六、Ingress：一个域名搞定多个服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81NetworkPolicy%EF%BC%9A%E8%B0%81%E8%83%BD%E8%B7%9F%E8%B0%81%E8%AF%B4%E8%AF%9D%EF%BC%9F"><span class="toc-number">3.2.</span> <span class="toc-text">七、NetworkPolicy：谁能跟谁说话？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E7%BD%91%E7%BB%9C%E6%8E%92%E6%9F%A5%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc-number">3.3.</span> <span class="toc-text">八、网络排查速查表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%A0%B8%E5%BF%83%E8%A6%81%E7%82%B9"><span class="toc-number">3.4.</span> <span class="toc-text">九、核心要点</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9AH3C%E4%BA%A4%E6%8D%A2%E6%9C%BA%E5%A0%86%E5%8F%A0/" title="TODO：H3C交换机堆叠">TODO：H3C交换机堆叠</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TCP%EF%BC%8CUDP/" title="TCP，UDP">TCP，UDP</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9A%E5%B8%B8%E7%94%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" title="TODO：常用网络模式">TODO：常用网络模式</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87/" title="网络设备">网络设备</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/Linux/%E5%AD%98%E5%82%A8%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/LVM/" title="LVM">LVM</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By TH5EED</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.6.1</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.1"></script><script src="/js/main.js?v=5.6.1"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'TH5EED/TH5EED.github.io',
+      'data-repo-id': 'R_kgDORsq4Zw',
+      'data-category-id': 'DIC_kwDORsq4Z84DB7rV',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

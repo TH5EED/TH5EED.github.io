@@ -1,0 +1,371 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>软件包介绍与命令 | TH5EED</title><meta name="author" content="TH5EED"><meta name="copyright" content="TH5EED"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="源码包优点 开源：可修改代码，安全，稳定 编译前（记得安装gcc）有配置选项，可自由选择所需选项对应的功能 本地化编译：根据当前CPU架构优化，编译出最适合的二进制，稳定，高效率 卸载方便（提前指定安装位置）  缺点 编译时间长 安装步骤多易出错 出错难解决  二进制包DPKGDebian开发的包管理机制应用在Debian和Ubuntu系 RPMRed Hat开发的包管理系统红帽系 包名，系统中已">
+<meta property="og:type" content="article">
+<meta property="og:title" content="软件包介绍与命令">
+<meta property="og:url" content="https://th5eed.github.io/2026/08/16/Linux/%E8%BD%AF%E4%BB%B6%E4%B8%8E%E5%8C%85%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%8C%85%E4%BB%8B%E7%BB%8D%E4%B8%8E%E5%91%BD%E4%BB%A4/index.html">
+<meta property="og:site_name" content="TH5EED">
+<meta property="og:description" content="源码包优点 开源：可修改代码，安全，稳定 编译前（记得安装gcc）有配置选项，可自由选择所需选项对应的功能 本地化编译：根据当前CPU架构优化，编译出最适合的二进制，稳定，高效率 卸载方便（提前指定安装位置）  缺点 编译时间长 安装步骤多易出错 出错难解决  二进制包DPKGDebian开发的包管理机制应用在Debian和Ubuntu系 RPMRed Hat开发的包管理系统红帽系 包名，系统中已">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://th5eed.github.io/img/avatar.jpg">
+<meta property="article:published_time" content="2026-08-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-16T09:22:50.502Z">
+<meta property="article:author" content="TH5EED">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="package">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://th5eed.github.io/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "软件包介绍与命令",
+  "url": "https://th5eed.github.io/2026/08/16/Linux/%E8%BD%AF%E4%BB%B6%E4%B8%8E%E5%8C%85%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%8C%85%E4%BB%8B%E7%BB%8D%E4%B8%8E%E5%91%BD%E4%BB%A4/",
+  "image": "https://th5eed.github.io/img/avatar.jpg",
+  "datePublished": "2026-08-15T16:00:00.000Z",
+  "dateModified": "2026-08-16T09:22:50.502Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "TH5EED",
+      "url": "https://TH5EED.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://th5eed.github.io/2026/08/16/Linux/%E8%BD%AF%E4%BB%B6%E4%B8%8E%E5%8C%85%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%8C%85%E4%BB%8B%E7%BB%8D%E4%B8%8E%E5%91%BD%E4%BB%A4/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '软件包介绍与命令',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">TH5EED</span></a><a class="nav-page-title" href="/"><span class="site-name">软件包介绍与命令</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">软件包介绍与命令</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-16T09:22:50.502Z" title="更新于 2026-08-16 17:22:50">2026-08-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linux/">Linux</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="源码包"><a href="#源码包" class="headerlink" title="源码包"></a>源码包</h1><h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><ol>
+<li>开源：可修改代码，安全，稳定</li>
+<li>编译前（记得安装gcc）有配置选项，可自由选择所需选项对应的功能</li>
+<li>本地化编译：根据当前CPU架构优化，编译出最适合的二进制，稳定，高效率</li>
+<li>卸载方便（提前指定安装位置）</li>
+</ol>
+<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><ol>
+<li>编译时间长</li>
+<li>安装步骤多易出错</li>
+<li>出错难解决</li>
+</ol>
+<h1 id="二进制包"><a href="#二进制包" class="headerlink" title="二进制包"></a>二进制包</h1><h2 id="DPKG"><a href="#DPKG" class="headerlink" title="DPKG"></a>DPKG</h2><p>Debian开发的包管理机制<br>应用在Debian和Ubuntu系</p>
+<h2 id="RPM"><a href="#RPM" class="headerlink" title="RPM"></a>RPM</h2><p>Red Hat开发的包管理系统<br>红帽系</p>
+<p><strong>包名</strong>，系统中已安装的包<br><code>httpd</code></p>
+<p><strong>包全名</strong>，系统中未安装的包，注意要绝对路径或进入仓库内<br><code>httpd-2.4.63-4.el10.x86_64.rpm</code><br>版本号，发布次数4，发行商el10，硬件架构</p>
+<h3 id="优点-1"><a href="#优点-1" class="headerlink" title="优点"></a>优点</h3><ol>
+<li>包管理系统简单：几个命令实现安装、升级、查询和卸载</li>
+<li>安装速度快</li>
+</ol>
+<h3 id="缺点-1"><a href="#缺点-1" class="headerlink" title="缺点"></a>缺点</h3><ol>
+<li>经过了编译，看不到源代码</li>
+<li>功能选择不如源码包安装</li>
+<li>依赖性：包依赖，函数库依赖</li>
+</ol>
+<h3 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h3><p>不用指定安装位置：</p>
+<ul>
+<li><code>/etc/</code>配置文件</li>
+<li><code>/etc/bin</code>可执行命令文件</li>
+<li><code>/usr/lib</code>所依赖函数库</li>
+<li><code>/usr/share/man</code>帮助文件</li>
+<li><code>usr/share/doc</code>使用手册</li>
+</ul>
+<h3 id="手工命令安装"><a href="#手工命令安装" class="headerlink" title="手工命令安装"></a>手工命令安装</h3><h4 id="优点-2"><a href="#优点-2" class="headerlink" title="优点"></a>优点</h4><p>查询本机安装的rpm的相关信息</p>
+<h4 id="缺点-2"><a href="#缺点-2" class="headerlink" title="缺点"></a>缺点</h4><p><strong>手工解决依赖性</strong></p>
+<h4 id="命令选项"><a href="#命令选项" class="headerlink" title="命令选项"></a>命令选项</h4><ul>
+<li><p>-ivh</p>
+<ul>
+<li>-i install</li>
+<li>-v verbose</li>
+<li>-h hash打印进度</li>
+</ul>
+</li>
+<li><p>–force</p>
+</li>
+<li><p>–test 只测试依赖性不安装</p>
+</li>
+<li><p>-U 升级，也跟包全名不是包名</p>
+</li>
+<li><p>-e erase 擦除卸载</p>
+</li>
+<li><p>-q [包名]query查询<strong>本机</strong></p>
+</li>
+<li><p>-qa 查询本机所有已安装</p>
+</li>
+<li><p>-qi [包名] information 查询某个已安装的包的详细信息</p>
+</li>
+<li><p>-qip [包全名] package 查询未安装的包的详细信息</p>
+</li>
+<li><p>-ql [包名]location查询包的安装的位置，不用管路径</p>
+</li>
+<li><p>-qlp [包全名] 查询未安装包的预安装位置</p>
+</li>
+<li><p>-qf [file] 查询系统文件属于哪个包</p>
+</li>
+</ul>
+<h4 id="导入数字证书"><a href="#导入数字证书" class="headerlink" title="导入数字证书"></a>导入数字证书</h4><p><img src="/images/Linux/%E8%BD%AF%E4%BB%B6%E4%B8%8E%E5%8C%85%E7%AE%A1%E7%90%86/assets/%E8%BD%AF%E4%BB%B6%E5%8C%85%E4%BB%8B%E7%BB%8D%E4%B8%8E%E5%91%BD%E4%BB%A4/file-20260519093715550.png"><br><img src="/images/Linux/%E8%BD%AF%E4%BB%B6%E4%B8%8E%E5%8C%85%E7%AE%A1%E7%90%86/assets/%E8%BD%AF%E4%BB%B6%E5%8C%85%E4%BB%8B%E7%BB%8D%E4%B8%8E%E5%91%BD%E4%BB%A4/file-20260519093715551.png"><br>两个位置无所谓，推荐导入虚拟光驱中的，因为只读<br><code>rpm --import /mnt/cdrom/RPM-GPG-KEY-Rocky-10</code><br>验证是否有gpg公钥<br><code>rpm -qa | grep gpg</code></p>
+<p><img src="/images/Linux/%E8%BD%AF%E4%BB%B6%E4%B8%8E%E5%8C%85%E7%AE%A1%E7%90%86/assets/%E8%BD%AF%E4%BB%B6%E5%8C%85%E4%BB%8B%E7%BB%8D%E4%B8%8E%E5%91%BD%E4%BB%A4/file-20260519093715551.png"></p>
+<h3 id="yum在线安装"><a href="#yum在线安装" class="headerlink" title="yum在线安装"></a>yum在线安装</h3><p>8版本后可升级为<strong>dnf</strong>安装</p>
+<h4 id="优点-3"><a href="#优点-3" class="headerlink" title="优点"></a>优点</h4><p>官方会提供一个yum源，里面保存所有rpm包，通过命令连接yum源，<strong>自动下载依赖</strong></p>
+<h4 id="缺点-3"><a href="#缺点-3" class="headerlink" title="缺点"></a>缺点</h4><p>查询<strong>yum源服务</strong>信息，不能查询本机rpm信息</p>
+<h4 id="yum源配置文件"><a href="#yum源配置文件" class="headerlink" title="yum源配置文件"></a>yum源配置文件</h4><p><code>/etc/yum.repos.d</code>下的.repo文件，注意部分文件为模板文件并不起效</p>
+<p>文件中各参数：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[baseos]</span></span><br><span class="line"><span class="comment">## 仓库唯一标识符</span></span><br><span class="line"></span><br><span class="line"><span class="attr">name</span>=Rocky Linux <span class="variable">$releasever</span> - BaseOS </span><br><span class="line"><span class="comment">## 人类可读仓库名称</span></span><br><span class="line"></span><br><span class="line"><span class="attr">mirrorlist</span>=https://mirrors.rockylinux.org/mirrorlist?arch=<span class="variable">$basearch</span>&amp;repo=BaseOS-<span class="variable">$releasever</span><span class="variable">$rltype</span></span><br><span class="line"><span class="comment">## 动态镜像列表</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#baseurl=http://dl.rockylinux.org/$contentdir/$releasever/BaseOS/$basearch/os/</span></span><br><span class="line"><span class="comment">## 静态镜像列表，注释备用</span></span><br><span class="line"></span><br><span class="line"><span class="attr">gpgcheck</span>=<span class="number">1</span></span><br><span class="line"><span class="comment">## 开启数字认证</span></span><br><span class="line"></span><br><span class="line"><span class="attr">enabled</span>=<span class="number">1</span></span><br><span class="line"><span class="comment">## 启用该仓库</span></span><br><span class="line"></span><br><span class="line"><span class="attr">countme</span>=<span class="number">1</span></span><br><span class="line"><span class="comment">## 当下载镜像时会被官方记录</span></span><br><span class="line"></span><br><span class="line"><span class="attr">metadata_expire</span>=<span class="number">6</span>h</span><br><span class="line"><span class="comment">## 元数据（不是下载过的rpm文件而是一些指引依赖文件）缓存过期时间</span></span><br><span class="line"></span><br><span class="line"><span class="attr">gpgkey</span>=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-Rocky-<span class="number">10</span></span><br><span class="line"><span class="comment">## 数字证书位置（先验证是否已导入，如果没导入自动导入该路径的证书）</span></span><br></pre></td></tr></table></figure>
+<h4 id="命令选项-1"><a href="#命令选项-1" class="headerlink" title="命令选项"></a>命令选项</h4><ul>
+<li>install -y </li>
+<li>remove -y</li>
+</ul>
+<p>查询查的是yum源中的包，并非本机</p>
+<ul>
+<li>provides 查询命令属于哪个包</li>
+<li>search 同上</li>
+</ul>
+<p>列出仓库中所有可供安装的软件包</p>
+<ul>
+<li>list available</li>
+<li>list</li>
+</ul>
+<p>列出可更新的软件包</p>
+<ul>
+<li>yum list updates</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://TH5EED.github.io">TH5EED</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://th5eed.github.io/2026/08/16/Linux/%E8%BD%AF%E4%BB%B6%E4%B8%8E%E5%8C%85%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%8C%85%E4%BB%8B%E7%BB%8D%E4%B8%8E%E5%91%BD%E4%BB%A4/">https://th5eed.github.io/2026/08/16/Linux/%E8%BD%AF%E4%BB%B6%E4%B8%8E%E5%8C%85%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%8C%85%E4%BB%8B%E7%BB%8D%E4%B8%8E%E5%91%BD%E4%BB%A4/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://TH5EED.github.io" target="_blank">TH5EED</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/linux/">linux</a><a class="post-meta__tags" href="/tags/package/">package</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/16/Linux/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C%E6%9C%8D%E5%8A%A1/" title="网络服务"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">网络服务</div></div><div class="info-2"><div class="info-item-1">Linux 网络配置服务对比（NetworkManager &#x2F; network &#x2F; systemd-networkd）一、核心对比   特性 NetworkManager network（传统服务） systemd-networkd    设计定位 动态网络管理，追求用户友好和自动化 静态网络配置，轻量、可靠 静态网络配置，极简、高效，适合服务器&#x2F;容器   配置方式 命令行（nmcli）、图形界面、配置文件（Keyfile&#x2F;ifcfg） 仅通过 &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-* 配置文件 通过 &#x2F;etc&#x2F;systemd&#x2F;network&#x2F; 目录下的 .network 文件   动态适应能力 强：自动检测网线插拔、切换WiFi、响应DHCP变化、支持VPN等 弱：配置固定，需手动重启服务才能生效，无动态监控 中等：可处理DHCP，但设计上侧重静态配置，WiFi支持不完善   适用场景 桌面环境、笔记本电脑、需要频繁切换网络...</div></div></div></a><a class="pagination-related" href="/2026/08/16/Linux/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4/" title="网络命令"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">网络命令</div></div><div class="info-2"><div class="info-item-1">ip a(dd(ress)) (sh(ow)) 显示IP地址（可简写）ip a r(oute) ((sh)ow) 显示网关 ip r 临时更换IP和网关，不建议  1234# 网卡相关命令ip link showip link show ens3ip link set ens3 up/down  nmcliNetworkManagerClient ifconfig看IP信息，nmcli更常用也可以临时更换 ifup、ifdown开关网卡后跟网卡名即可 ping通过ICMP协议进行网络探测  -b 后接广播地址，对整个网段进行探测 -c ping的次数  arping待做 ss、netstat   对比维度 netstat ss 面试得分点    数据来源 解析 /proc/net/tcp 等文本文件 直接通过 Netlink 接口与内核通信 ss 避免了大量文本解析和内存拷贝   性能表现 连接数多时极慢（O(n) 遍历） 毫秒级响应，支持内核态过滤 高并发&#x2F;生产环境排查首选   维护状态 已废弃 (deprecated) iproute2 套件，活跃维护 新系统默认可...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/16/Linux/%E8%BD%AF%E4%BB%B6%E4%B8%8E%E5%8C%85%E7%AE%A1%E7%90%86/%E9%80%9F%E6%9F%A5/" title="速查"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">速查</div></div><div class="info-2"><div class="info-item-1">📝 命令总结与速查表为了方便你记忆，我把最常用的几个场景和命令整理如下：    你的需求 推荐命令 说明    查所有可安装的包 yum list available或yum list或yum list 包名 --showduplicates看所有版本 ✅ 唯一正确方法。rpm 做不到。   查本机已安装的包 yum list installed 或 rpm -qa 两者都可以，yum 的输出通常更直观。   查某个包的信息（版本、依赖等） yum info &lt;包名&gt; yum 会告诉你这个包在仓库里的状态（是否已安装）。   根据模糊名字找包 yum search &lt;关键词&gt; 比用 rpm -qa | grep 更强大，因为它会在仓库的所有包里搜索。   查本机某个文件属于哪个包 rpm -qf /path/to/file 这是 rpm 的经典用法，也很快速。   简单来说：想“逛商店”看能装什么，用 yum；想“查自家柜子”看装了什么，rpm 和 yum 都行。 📊 Linux 软件安装方式对比为了帮你从根上理解，我把常见的几种安装方式做了个对比： ...</div></div></div></a><a class="pagination-related" href="/2026/08/16/Linux/%E8%BD%AF%E4%BB%B6%E4%B8%8E%E5%8C%85%E7%AE%A1%E7%90%86/%E9%85%8D%E7%BD%AE%E6%9C%AC%E5%9C%B0yum%E6%BA%90/" title="配置本地yum源"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">配置本地yum源</div></div><div class="info-2"><div class="info-item-1">本地yum源介绍让yum包管理器不再尝试去连接那些无法到达的远程仓库，而是直接从本地挂载的ISO镜像文件获取软件包和依赖信息，从而在离线环境中也能顺利完成软件的安装和管理 操作步骤 用系统版本相近的镜像文件作本地yum仓库  创建挂载目录mkdir /mnt/cdrom  将镜像挂载到目录mount /path/to/CentOS-7-x86_64-DVD.iso /mnt/cdrom  备份原仓库，创建本地仓库mkdir /etc/yum.repos.d/bak &amp;&amp; mv /etc/yum.repos.d/*.repo etc/yum.repos.d/bak/  创建并编辑文件vi /etc/yum.repos.d/local.repo   123456789[local-BaseOS]name=local BaseOS# 注意：rocky10版本有两个仓库BaseOS,AppStream，具体要看镜像文件中有几个存放rpm包的目录baseurl=file:///mnt/cdrom/BaseOSenabled=1gpgcheck=1countme=1metad...</div></div></div></a><a class="pagination-related" href="/2026/08/16/Linux/%E7%BD%91%E7%BB%9C/%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93%E4%B8%8E%E4%B8%8B%E8%BD%BD/" title="文件传输与下载"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">文件传输与下载</div></div><div class="info-2"><div class="info-item-1">scpsecure copy，基于SSH协议在主机间复制文件 1234567891011# 本地 → 远程scp /local/file.txt root@192.168.1.100:/remote/path/# 远程 → 本地scp root@192.168.1.100:/remote/file.txt /local/path/# 远程 → 远程（两个远程主机之间）scp root@host1:/file root@host2:/path/# 复制目录scp -r /local/dir root@192.168.1.100:/remote/path/   -r recursion 递归复制目录 -P 指定端口（大写P，SSH端口） -p 保留原文件修改时间、访问时间和权限（小写p）  &#x3D;&#x3D;scp走SSH隧道，传输加密；但传输大文件不支持断点续传&#x3D;&#x3D; wget非交互式网络下载工具，&#x3D;&#x3D;支持断点续传、后台下载、递归下载&#x3D;&#x3D; 123456789101112131415# 下载文件wget https://...</div></div></div></a><a class="pagination-related" href="/2026/08/16/Linux/%E7%BD%91%E7%BB%9C/%E9%98%B2%E7%81%AB%E5%A2%99/" title="防火墙"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">防火墙</div></div><div class="info-2"><div class="info-item-1">和一些云厂商自带的防火墙容易出现规则冲突：明明端口开了但连不上k8s底层有ipvs和iptables，防止干扰 Linux防火墙和firewalld详解防火墙基础概念Linux防火墙是一种网络安全系统，用于控制进出计算机或网络的数据流量。它根据预定义的安全规则来允许或阻止网络连接。 firewalld简介Firewalld是动态防火墙管理器，是Red Hat、CentOS、Fedora等发行版中iptables的前端控制器，自RHEL&#x2F;CentOS 7开始成为默认的防火墙管理工具。 firewalld的核心特点 动态管理：无需重启防火墙服务即可应用更改 区域（Zones）概念：提供不同级别的安全策略 服务（Services）概念：基于预定义的服务模板进行配置  主要区域（Zones）   区域 信任级别 说明    drop 最低 丢弃所有传入连接，仅允许传出连接   block 低 拒绝传入连接，带有icmp-host-prohibited消息   public 默认 用于不受信任的公共区域   external 中 用于启用了NAT伪装的外部区域   dmz 中高 ...</div></div></div></a><a class="pagination-related" href="/2026/08/16/Linux/%E5%91%BD%E4%BB%A4%E8%A1%8C%E4%B8%8E%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C/" title="文件目录操作"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">文件目录操作</div></div><div class="info-2"><div class="info-item-1">引用计数12345678[root@thx ~]# ls -l总用量 16-rw------- 1 root root 2872  4月  9 15:28 anaconda-ks.cfg-rw-r--r-- 1 root root 3458  4月  9 15:35 initial-setup-ks.cfgdrwxr-xr-x 2 root root   62  4月 14 12:16 podtest-rw-r--r-- 1 root root  234  4月 13 11:00 test.yaml.tmp-rw-r--r-- 1 root root 1250  4月  9 17:23 woqu-command.sh# 权限 引用计数 所有者 所属组 大小  修改时间   文件名 目录的引用计数指下面的一级子目录个数（包括.和..） 文件的引用计数指该文件的硬链接个数 目录操作命令ls -i 文件节点号，唯一的；允许同时看两个文件 -d 只看当前目录 -h 人类可读文件大小 –color&#x3D;[ ] 颜色输出  always默认  never从不  auto自动  cd  ...</div></div></div></a><a class="pagination-related" href="/2026/08/16/Linux/%E5%91%BD%E4%BB%A4%E8%A1%8C%E4%B8%8E%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4%E4%B8%8E%E5%BF%AB%E6%8D%B7%E9%94%AE/" title="基础命令与快捷键"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">基础命令与快捷键</div></div><div class="info-2"><div class="info-item-1">命令提示符[root@localhost ~]#root用户：#[abcd@loaclhost ~]$普通用户：$ 命令格式command [option/flag] [argument/parameter]选项用于调整命令的功能参数是命令的操作对象 快捷键   快捷键 作用    Tab 键 命令或文件补全   Ctrl+A 把光标移动到命令行开头。如果我们输入的命令过长，想要把光标移动到命令行开头时使用。   Ctrl+E 把光标移动到命令行结尾。   Ctrl+C 强制终止当前的命令。   Ctrl+L 清屏，相当于 clear 命令。   Ctrl+U 删除或剪切光标之前的命令。输入了一行很长的命令，不用使用退格键。   Ctrl+Y 粘贴Ctrl+U剪切的内容。   man man &lt;命令&gt;&#x2F;搜索 n下一个 N上一个 whatis &lt;命令&gt; 查看命令的等级  help只能看内置命令（不是bin和sbin下的系统命令），如pwd,kill,cd等 </div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">TH5EED</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎常来坐坐，听听歌，聊聊天～</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E5%8C%85"><span class="toc-number">1.</span> <span class="toc-text">源码包</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E7%82%B9"><span class="toc-number">1.1.</span> <span class="toc-text">优点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%BA%E7%82%B9"><span class="toc-number">1.2.</span> <span class="toc-text">缺点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%8C%85"><span class="toc-number">2.</span> <span class="toc-text">二进制包</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#DPKG"><span class="toc-number">2.1.</span> <span class="toc-text">DPKG</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RPM"><span class="toc-number">2.2.</span> <span class="toc-text">RPM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%82%B9-1"><span class="toc-number">2.2.1.</span> <span class="toc-text">优点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%BA%E7%82%B9-1"><span class="toc-number">2.2.2.</span> <span class="toc-text">缺点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E7%82%B9"><span class="toc-number">2.2.3.</span> <span class="toc-text">特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%8B%E5%B7%A5%E5%91%BD%E4%BB%A4%E5%AE%89%E8%A3%85"><span class="toc-number">2.2.4.</span> <span class="toc-text">手工命令安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%98%E7%82%B9-2"><span class="toc-number">2.2.4.1.</span> <span class="toc-text">优点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%BA%E7%82%B9-2"><span class="toc-number">2.2.4.2.</span> <span class="toc-text">缺点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%91%BD%E4%BB%A4%E9%80%89%E9%A1%B9"><span class="toc-number">2.2.4.3.</span> <span class="toc-text">命令选项</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%BC%E5%85%A5%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6"><span class="toc-number">2.2.4.4.</span> <span class="toc-text">导入数字证书</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#yum%E5%9C%A8%E7%BA%BF%E5%AE%89%E8%A3%85"><span class="toc-number">2.2.5.</span> <span class="toc-text">yum在线安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%98%E7%82%B9-3"><span class="toc-number">2.2.5.1.</span> <span class="toc-text">优点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%BA%E7%82%B9-3"><span class="toc-number">2.2.5.2.</span> <span class="toc-text">缺点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#yum%E6%BA%90%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">2.2.5.3.</span> <span class="toc-text">yum源配置文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%91%BD%E4%BB%A4%E9%80%89%E9%A1%B9-1"><span class="toc-number">2.2.5.4.</span> <span class="toc-text">命令选项</span></a></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9AH3C%E4%BA%A4%E6%8D%A2%E6%9C%BA%E5%A0%86%E5%8F%A0/" title="TODO：H3C交换机堆叠">TODO：H3C交换机堆叠</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TCP%EF%BC%8CUDP/" title="TCP，UDP">TCP，UDP</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9A%E5%B8%B8%E7%94%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" title="TODO：常用网络模式">TODO：常用网络模式</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87/" title="网络设备">网络设备</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/Linux/%E5%AD%98%E5%82%A8%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/LVM/" title="LVM">LVM</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By TH5EED</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.6.1</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.1"></script><script src="/js/main.js?v=5.6.1"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'TH5EED/TH5EED.github.io',
+      'data-repo-id': 'R_kgDORsq4Zw',
+      'data-category-id': 'DIC_kwDORsq4Z84DB7rV',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

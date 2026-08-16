@@ -1,0 +1,219 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>TH5EED</title><meta name="author" content="TH5EED"><meta name="copyright" content="TH5EED"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta property="og:type" content="website">
+<meta property="og:title" content="TH5EED">
+<meta property="og:url" content="https://th5eed.github.io/page/7/index.html">
+<meta property="og:site_name" content="TH5EED">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://th5eed.github.io/img/avatar.jpg">
+<meta property="article:author" content="TH5EED">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://th5eed.github.io/img/avatar.jpg"><script type="application/ld+json"></script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://th5eed.github.io/page/7/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'TH5EED',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'home'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="full_page" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">TH5EED</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="site-info"><h1 id="site-title">TH5EED</h1></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts nc" id="recent-posts"><div class="recent-post-items"><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/%E6%95%B0%E6%8D%AE%E5%BA%93/Vastbase/ssl/" title="ssl">ssl</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></span></div><div class="content">（附件缺失：assets&#x2F;ssl&#x2F;Pasted%20image%2020260615203040.png） 了解ssl连接和本地连接和客户端连接的关系 图中是修改ssl连接库失败的问题的核心操作，记得进那个文件中看下是否有host或hostssl参数 </div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/%E6%95%B0%E6%8D%AE%E5%BA%93/Vastbase/%E4%BB%8B%E7%BB%8D/" title="介绍">介绍</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></span></div><div class="content">发展 postgresql，最受惯性的关系型数据库，开源  openguass，华为基于pg9.2.4内核研发，开源  vastbase，海量基于openguass内核研发，商业   详细对比   对比维度 PostgreSQL openGauss Vastbase    内核与演进 社区驱动的开源数据库，技术源头 基于PG 9.2.4内核，进行了大量架构级改造 基于openGauss内核，增加大量企业级功能   性能与并发 采用进程模型，高并发下连接切换有性能损耗 采用线程池模型，高并发性能更优，1万并发连接性能损耗&lt;5% 继承openGauss的线程池模型，在高并发场景下性能优异   架构与扩展 支持丰富的扩展插件（如PostGIS），但仅支持行存储 支持行列混合存储和内存引擎，为HTAP混合负载优化 继承openGauss的混合存储架构，并整合了GIS等组件   安全特性 密码默认MD5加密，支持标准的审计追踪 密码默认SHA256加密，有更强的审计与权限控制 在openGauss基础上，遵循EAL4+ 标准进行了安全增强   兼容性 高度遵循SQL标准 兼容Post...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Docker/%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" title="常用命令">常用命令</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/">云原生</a></span></div><div class="content">验证命令1234567# 查看docker服务状态systemctl status dockerps -ef | grep docker# 查看版本，前者更全docker versiondocker -v  镜像命令1234567891011121314151617181920212223242526272829303132333435# 查看本地镜像docker images# 查看虚悬镜像，&lt;none&gt;:&lt;none&gt;的为虚悬镜像，冗余无用的docker images --filter(-f) dangling=true# 查找镜像(docker.io)docker search &lt;image&gt;# 查找点赞前n的镜像(docker.io)docker search &lt;image&gt; --limit &lt;n&gt;# 查看镜像、容器、数据卷所占空间docker system df# 查看镜像历史docker history &lt;imgage&gt;/&lt;id&gt;-----------------------------...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/%E6%95%B0%E6%8D%AE%E5%BA%93/Vastbase/%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/" title="体系结构">体系结构</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></span></div><div class="content">体系架构集中式或主备式数据库系统（附件缺失：assets&#x2F;体系结构&#x2F;Pasted%20image%2020260716092740.png） 内存结构共享内存所有线程共享区域最重要的是共享缓存区shared_buffers：缓存了从磁盘读取的数据页，减少了慢速的磁盘IO cstore_buffers是为列存表准备的独立缓存区，是处理列存数据的工作台 会话(本地)内存每个工作线程私有，互不干扰  work_mem 用于排序，哈希连接等操作的内存 temp_buffers 访问数据库临时表 maintenance_work_mem 维护操作  物理结构docker run -it –rm –name qfusion-ansible    -e RESERVE_HOSTNAME&#x3D;true -v $(pwd)&#x2F;..&#x2F;:&#x2F;qfusion&#x2F; registry.woqutech.com&#x2F;woqutech&#x2F;qfusion-ansible:2.9.27  所有的数据、日志和配置最终都以文件的形式存放在磁盘上 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/%E6%95%B0%E6%8D%AE%E5%BA%93/Vastbase/%E5%88%86%E5%8C%BA/" title="分区">分区</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></span></div><div class="content">概念将一张逻辑上的大表，在物理上拆分成多个独立的片段 树状图中可以看到表OID下放着的是表的数据文件 数据库默认不选择分区，由有建表权限的用户在建表时手动指定的一个高级选项 分区后（分区后无法将表分区，只能管理）： 12345678base/24576/               # mydb库的文件夹├── 26001                 # 注意：此时26001变成了逻辑父表（大小为0字节，仅存元数据）├── 26002                 # 分区子表：存放2024年的数据├── 26002_fsm / _vm       ├── 26003                 # 分区子表：存放2025年的数据├── 26003_fsm / _vm├── 26004                 # 分区子表：存放2026年的数据└── 26004_fsm / _vm  作用 提升查询性能：只扫描小片段，不必全表  方便数据管理：删掉表中的某一年的全部数据只需要删掉一个片段即可   分区策略主流   分区类型 核心规则 举个生活中的例子 适用场景 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/%E6%95%B0%E6%8D%AE%E5%BA%93/Vastbase/%E5%A4%87%E4%BB%BD/" title="备份">备份</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></span></div><div class="content">逻辑备份工具（vb_dump、vb_dumpall）不支持增量备份；	vb_dumpall 能导出整个数据库簇的所有数据，且不影响正常访问。	vb_dump 只导出一个库		vb_dump 支持多种输出格式（纯文本、自定义、目录等），可自定义；		其他工具格式固定。 vb_basebackup为全量物理备份； vb_restore 是恢复工具。 只有 vb_probackup 支持增量备份，备份管理 </div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/%E6%95%B0%E6%8D%AE%E5%BA%93/Vastbase/%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%B7%A5%E5%85%B7/" title="客户端工具">客户端工具</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></span></div><div class="content">vsql自带，类似sqlplus，mysql 基本功能：  连接数据库 执行SQL语句：支持交互式地键入并执行SQL语句，也可以执行一个文件中指定的SQL语句。 执行元命令：元命令可以帮助管理员查看数据库对象的信息、查询缓存区信息、格式化SQL输出结果，以及连接到新的数据库等。     元命令 全称&#x2F;含义 作用 示例    \c connect 切换数据库连接。可以连接到另一个数据库或更换用户。 \c mydb myuser   \q quit 退出 vsql 客户端。 \q   \h help 查看SQL命令的帮助。比如想看 CREATE TABLE 的用法。 \h CREATE TABLE   \? help 列出所有元命令的帮助。 \?   \d describe 查看数据库对象（如表、视图、索引）的定义或列表。这是最常用的元命令之一。 \d (列出所有表)  \d mytable (查看表结构)   \l list 列出所有数据库。 \l   \dt list tables 列出所有表。 \dt   \du list users 列出所有数据库角色&#x2F;用...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/%E6%95%B0%E6%8D%AE%E5%BA%93/Vastbase/%E5%AE%89%E8%A3%85/" title="安装">安装</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></span></div><div class="content">国产操作系统，我选择openEuler-22.03-LTS-SP1-everything-x86_64-dvd.iso root身份登录 12# 安装依赖软件包yum install -y zlib-devel libaio libuuid readline-devel krb5-libs libicu libxslt tcl perl openldap pam openssl-devel libxml2 bzip2 python3  关闭防火墙 关闭透明大页：如果不关闭THP（Transparent Huge Pages，透明大页），可能会对数据库性能产生负面影响 详细看官方文档吧，懒得写了，反正我也不懂啥意思，照着做 </div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/%E6%95%B0%E6%8D%AE%E5%BA%93/Vastbase/%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86/" title="权限管理">权限管理</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></span></div><div class="content">三权分立介绍高安全的权限管理机制 将传统的数据库管理员（DBA）过于集中的超级权限拆分成三个管理员角色：  系统管理员 安全管理员 审计管理员     角色 简称 核心职责    系统管理员 vbadmin 负责数据库的日常运维，如创建、配置、维护、备份和恢复等。   安全管理员 vbsso 负责信息安全管理，如制定访问控制策略、用户身份验证与授权等。   审计管理员 vbaudit 负责监督与审计，开启和查看审计日志，记录所有操作行为，以便事后追溯。   运作 开启与关闭：通过参数vb_enable_separation_of_duty控制。设置为on时开启off时关闭  审计日志的专有权限：只有审计管理员可以查看审计日志  配置权的分离：部分安全相关配置（如 audit_user 参数）的修改权限也将只归属于审计管理员   对象权限，系统权限create schema属于对象权限 </div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/Linux/%E6%97%A5%E5%BF%97%E4%B8%8E%E7%9B%91%E6%8E%A7/%E6%8C%81%E7%BB%AD%E6%94%B6%E9%9B%86%E6%97%A5%E5%BF%97/" title="持续收集日志">持续收集日志</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span></div><div class="content">持续收集日志在排查问题时，往往需要长时间实时监控日志输出 tail -f最常用的持续监听文件新增内容 12tail -f /var/log/messages        # 持续监听tail -F /var/log/messages        # 文件被重建（如logrotate）后继续监听  &#x3D;&#x3D;-f 监听同一个inode；-F 当文件被删除重建后能重新跟上&#x3D;&#x3D; kubectl logs -f持续收集K8s Pod的日志 123456# 持续监听Pod日志kubectl logs -f &lt;pod-name&gt;# 边收集边保存到文件kubectl logs -f &lt;pod-name&gt; &gt; auth.log &amp;# &amp; 放入后台运行，结束后用kill或fg停止  &#x3D;&#x3D;后台收集日志时，结束后记得kill掉后台进程，否则一直占用资源&#x3D;&#x3D; 重定向保存将实时日志输出保存到文件，方便后续分析 12345# 只保存kubectl logs -f &lt;pod-nam...</div></div></div></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/page/6/#content-inner"><i class="fas fa-chevron-left fa-fw"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/#content-inner">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/#content-inner">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/#content-inner">14</a><a class="extend next" rel="next" href="/page/8/#content-inner"><i class="fas fa-chevron-right fa-fw"></i></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">TH5EED</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎常来坐坐，听听歌，聊聊天～</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9AH3C%E4%BA%A4%E6%8D%A2%E6%9C%BA%E5%A0%86%E5%8F%A0/" title="TODO：H3C交换机堆叠">TODO：H3C交换机堆叠</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TCP%EF%BC%8CUDP/" title="TCP，UDP">TCP，UDP</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9A%E5%B8%B8%E7%94%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" title="TODO：常用网络模式">TODO：常用网络模式</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87/" title="网络设备">网络设备</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/Linux/%E5%AD%98%E5%82%A8%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/LVM/" title="LVM">LVM</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>分类</span>
+            
+          </div>
+          <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Linux/"><span class="card-category-list-name">Linux</span><span class="card-category-list-count">41</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/"><span class="card-category-list-name">中间件</span><span class="card-category-list-count">3</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/"><span class="card-category-list-name">云原生</span><span class="card-category-list-count">49</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E4%BD%9C%E6%88%98%E5%AE%A4/"><span class="card-category-list-name">作战室</span><span class="card-category-list-count">3</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"><span class="card-category-list-name">数据库</span><span class="card-category-list-count">13</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/"><span class="card-category-list-name">网络与安全</span><span class="card-category-list-count">5</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E8%87%AA%E5%8A%A8%E5%8C%96/"><span class="card-category-list-name">自动化</span><span class="card-category-list-count">24</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E9%9D%A2%E7%BB%8F/"><span class="card-category-list-name">面经</span><span class="card-category-list-count">1</span></a></li>
+          </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/linux/" style="font-size: 1.47em; color: #99a8bc">linux</a> <a href="/tags/monitoring/" style="font-size: 1.17em; color: #999c9f">monitoring</a> <a href="/tags/docker/" style="font-size: 1.33em; color: #99a2af">docker</a> <a href="/tags/%E8%99%9A%E6%8B%9F%E5%8C%96/" style="font-size: 1.1em; color: #999">虚拟化</a> <a href="/tags/redis/" style="font-size: 1.1em; color: #999">redis</a> <a href="/tags/ansible/" style="font-size: 1.1em; color: #999">ansible</a> <a href="/tags/network-security/" style="font-size: 1.2em; color: #999da3">network-security</a> <a href="/tags/Harbor/" style="font-size: 1.1em; color: #999">Harbor</a> <a href="/tags/sql-server/" style="font-size: 1.1em; color: #999">sql server</a> <a href="/tags/storage/" style="font-size: 1.3em; color: #99a1ac">storage</a> <a href="/tags/%E7%A7%8B%E6%8B%9B/" style="font-size: 1.1em; color: #999">秋招</a> <a href="/tags/cli/" style="font-size: 1.33em; color: #99a2af">cli</a> <a href="/tags/package/" style="font-size: 1.17em; color: #999c9f">package</a> <a href="/tags/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" style="font-size: 1.1em; color: #999">负载均衡</a> <a href="/tags/system/" style="font-size: 1.3em; color: #99a1ac">system</a> <a href="/tags/rocketmq/" style="font-size: 1.13em; color: #999a9c">rocketmq</a> <a href="/tags/mysql/" style="font-size: 1.1em; color: #999">mysql</a> <a href="/tags/nginx/" style="font-size: 1.1em; color: #999">nginx</a> <a href="/tags/dockerfile/" style="font-size: 1.1em; color: #999">dockerfile</a> <a href="/tags/CI-CD/" style="font-size: 1.23em; color: #999ea6">CI/CD</a> <a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" style="font-size: 1.1em; color: #999">中间件</a> <a href="/tags/Jenkins/" style="font-size: 1.1em; color: #999">Jenkins</a> <a href="/tags/%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/" style="font-size: 1.1em; color: #999">反向代理</a> <a href="/tags/%E9%9D%A2%E8%AF%95/" style="font-size: 1.1em; color: #999">面试</a> <a href="/tags/containerd/" style="font-size: 1.23em; color: #999ea6">containerd</a> <a href="/tags/GitLab/" style="font-size: 1.1em; color: #999">GitLab</a> <a href="/tags/security/" style="font-size: 1.23em; color: #999ea6">security</a> <a href="/tags/automation/" style="font-size: 1.43em; color: #99a6b9">automation</a> <a href="/tags/Linux/" style="font-size: 1.1em; color: #999">Linux</a> <a href="/tags/strategy/" style="font-size: 1.13em; color: #999a9c">strategy</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E6%8E%92%E6%9F%A5/" style="font-size: 1.1em; color: #999">网络排查</a> <a href="/tags/%E6%8C%87%E6%8E%8C%E6%98%93/" style="font-size: 1.1em; color: #999">指掌易</a> <a href="/tags/postgresql/" style="font-size: 1.1em; color: #999">postgresql</a> <a href="/tags/DooD/" style="font-size: 1.1em; color: #999">DooD</a> <a href="/tags/%E8%81%8C%E4%B8%9A%E8%A7%84%E5%88%92/" style="font-size: 1.1em; color: #999">职业规划</a> <a href="/tags/cloud-native/" style="font-size: 1.5em; color: #99a9bf">cloud-native</a> <a href="/tags/shell/" style="font-size: 1.27em; color: #99a0a9">shell</a> <a href="/tags/vastbase/" style="font-size: 1.37em; color: #99a4b2">vastbase</a> <a href="/tags/database/" style="font-size: 1.4em; color: #99a5b6">database</a> <a href="/tags/%E9%9D%A2%E7%BB%8F/" style="font-size: 1.1em; color: #999">面经</a></div></div><div class="card-widget card-archives">
+    <div class="item-headline">
+      <i class="fas fa-archive"></i>
+      <span>归档</span>
+      
+    </div>
+  
+    <ul class="card-archive-list">
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/08/">
+            <span class="card-archive-list-date">
+              八月 2026
+            </span>
+            <span class="card-archive-list-count">138</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/07/">
+            <span class="card-archive-list-date">
+              七月 2026
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+    </ul>
+  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站信息</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">139</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总浏览量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-08-16T14:29:58.687Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By TH5EED</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.6.1</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.1"></script><script src="/js/main.js?v=5.6.1"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

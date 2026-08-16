@@ -1,0 +1,294 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>MetalLB 负载均衡 | TH5EED</title><meta name="author" content="TH5EED"><meta name="copyright" content="TH5EED"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="裸金属服务器 BMSBare Metal Server&#x2F;BMS 兼具虚拟机弹性和物理机性能的计算机类服务  用户可灵活申请，按需使用 为核心数据库，关键业务系统，AI等高性能计算提供卓越性能和数据安全 主要提供CPU内存，存储还是用的是云硬盘（方便安装镜像和云备份）  传统云服务弊端  调用硬件资源时归根结底还是性能不如物理服务器 别的租户高负荷时，自己难免受到影响，对稳定需求的应用有影">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MetalLB 负载均衡">
+<meta property="og:url" content="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/MetalLB%20%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/index.html">
+<meta property="og:site_name" content="TH5EED">
+<meta property="og:description" content="裸金属服务器 BMSBare Metal Server&#x2F;BMS 兼具虚拟机弹性和物理机性能的计算机类服务  用户可灵活申请，按需使用 为核心数据库，关键业务系统，AI等高性能计算提供卓越性能和数据安全 主要提供CPU内存，存储还是用的是云硬盘（方便安装镜像和云备份）  传统云服务弊端  调用硬件资源时归根结底还是性能不如物理服务器 别的租户高负荷时，自己难免受到影响，对稳定需求的应用有影">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://th5eed.github.io/img/avatar.jpg">
+<meta property="article:published_time" content="2026-08-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-16T09:22:50.539Z">
+<meta property="article:author" content="TH5EED">
+<meta property="article:tag" content="cloud-native">
+<meta property="article:tag" content="kubernetes">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://th5eed.github.io/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MetalLB 负载均衡",
+  "url": "https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/MetalLB%20%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/",
+  "image": "https://th5eed.github.io/img/avatar.jpg",
+  "datePublished": "2026-08-15T16:00:00.000Z",
+  "dateModified": "2026-08-16T09:22:50.539Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "TH5EED",
+      "url": "https://TH5EED.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/MetalLB%20%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'MetalLB 负载均衡',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">TH5EED</span></a><a class="nav-page-title" href="/"><span class="site-name">MetalLB 负载均衡</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">MetalLB 负载均衡</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-16T09:22:50.539Z" title="更新于 2026-08-16 17:22:50">2026-08-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/">云原生</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="裸金属服务器-BMS"><a href="#裸金属服务器-BMS" class="headerlink" title="裸金属服务器 BMS"></a>裸金属服务器 BMS</h1><p>Bare Metal Server&#x2F;BMS</p>
+<p>兼具<strong>虚拟机弹性</strong>和<strong>物理机性能</strong>的计算机类服务</p>
+<ol>
+<li>用户可灵活申请，按需使用</li>
+<li>为核心数据库，关键业务系统，<strong>AI等高性能计算</strong>提供卓越性能和数据安全</li>
+<li>主要提供CPU内存，存储还是用的是云硬盘（方便安装镜像和云备份）</li>
+</ol>
+<p>传统云服务弊端</p>
+<ol>
+<li>调用硬件资源时归根结底还是性能不如物理服务器</li>
+<li>别的租户高负荷时，自己难免受到影响，对稳定需求的应用有影响</li>
+</ol>
+<p>裸，意味着不包括操作系统和软件，由客户自选配置</p>
+<p>（附件缺失：assets&#x2F;MetalLB%20负载均衡&#x2F;Pasted%20image%2020260720114251.png）</p>
+<h1 id="metallb"><a href="#metallb" class="headerlink" title="metallb"></a><a href="../../../QFusion/%E4%BA%A7%E5%93%81%E7%90%86%E8%A7%A3/QFusion%E7%BB%84%E4%BB%B6.md#metallb">metallb</a></h1></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://TH5EED.github.io">TH5EED</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/MetalLB%20%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/MetalLB%20%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://TH5EED.github.io" target="_blank">TH5EED</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/cloud-native/">cloud-native</a><a class="post-meta__tags" href="/tags/kubernetes/">kubernetes</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/API/" title="API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">API</div></div><div class="info-2"><div class="info-item-1">本质API定义了“用户能说什么”，”用户能怎么说“，”会怎么回复用户“，屏蔽了复杂性点菜，用户只需要看着菜单，说吃什么菜，吃米饭或馒头，放不放香菜等，不需要关注怎么做出来 三大要素动词，methodsHTTP中常用增删改查GET&#x2F;POST&#x2F;PUT&#x2F;DELETEk8s中还有Watch监听，Proxy代理等 名词，resources对”什么“操作，比如用户数据，图片文件，pod，service，deployment 格式，schema</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/API-Server/" title="API-Server"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">API-Server</div></div><div class="info-2"><div class="info-item-1">为什么组件监听API-Server而不是etcd1. 安全性与权限隔离（审计和RBAC） 运维痛点：etcd 本身是一个没有细粒度权限控制的纯KV存储（只有用户名密码认证，没有“命名空间”或“资源类型”概念）。  如果直连etcd：kubelet 一旦拿到etcd的证书，就能看到整个集群所有Namespace的所有Pod、Secret（密钥），这严重违反了最小权限原则。  为什么监听APIServer：APIServer 是唯一的“安检口”。它会对kubelet的请求做RBAC鉴权（比如只允许kubelet看自己节点上的Pod），并且所有的操作都会记录在**审计日志（Audit Log）**里。出了问题，运维能查日志追责；直连etcd，运维根本不知道是谁干了什么。   2. 数据格式与准入校验（防止脏数据写爆集群） 运维痛点：etcd 只是个“笨仓库”，它不认识 Pod、Service 是什么，它只认二进制或字符串。  如果直连etcd：如果 kubelet 或 kube-proxy 有BUG，或者网络传输出现乱码，直接把一堆乱码写进 etcd，或者直接删掉一个关键key，API...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/%E9%9B%86%E7%BE%A4%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6/" title="集群安全机制"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">集群安全机制</div></div><div class="info-2"><div class="info-item-1">安全机制说明 围绕api-server设计，因为它是集群内部各组件通信的中介，也是外部控制的入口  Authentication：认证  Authorization：鉴权  AdmissionControl：准入控制   （附件缺失：..&#x2F;assets&#x2F;集群安全机制&#x2F;Pasted%20image%2020260707141912.png） 认证认证模式 HTTP Token：一串长字符串token作为表达用户的方式，存储在apiserver能访问的文件中，当客户端发起api请求，需要在HTTP Header中放入token供服务端验证  HTTP Base：基于用户的认证。用户+密码通过base64编码后，用户将其放入HTTP Request的认证域中发送给服务端，服务端解码验证  HTTPS：基于CA根证书的客户端身份认证方式   前两个是单向认证，第三个HTTPS双向认证mTLS（HTTPS也有单向：客户端验证服务端） （附件缺失：..&#x2F;assets&#x2F;集群安全机制&#x2F;Pasted%20image%20202607071...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/k8s%E4%BB%8B%E7%BB%8D/" title="k8s介绍"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">k8s介绍</div></div><div class="info-2"><div class="info-item-1">优势 服务发现和负载均衡创建一个svc资源即可替代“手动搭建nginx作为负载调度器，用户请求被负载到不同的apache”  存储编排（添加任何本地或云服务器）一条命令就可以使用存储的资源；云服务器还可以按量收费  自动部署和回滚定义一个job检测远程代码仓库，有更新就调用k8s接口实现自动部署；回滚版本  自动分配CPU&#x2F;内存资源-弹性收缩自动挑选最合适节点  自我修复（需要时启动新容器）重启pod代价足够小  secret和配置管理敏感信息编码  支持大型规模  开源   微观架构微观架构图 组件 API Server k8s的核心接口和控制中枢，负责处理所有外部请求和内部组件通信  web UI  官方本身不配置，但可以安装dashboard组件  kubectl 客户端工具  Scheduler 控制器  Controller Manager(Replication Controller) 调度器    etcd 分布式键值存储来自API Server理解的数据，持久化保存集群的完整状态数据，Raft选举机制保证高可用，需要节点奇数个  kubelet 承上启下...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E4%B8%8EHelm%E5%85%A5%E9%97%A8/" title="网络工作原理与Helm入门"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">网络工作原理与Helm入门</div></div><div class="info-2"><div class="info-item-1">kibana的部署，相当于web服务器fluentd采集日志，可在kibana网页查看vim xx.yamlkubectl apply -f xx.yaml 二者属于helm的组件 k8s网络工作原理docker网络模型装了就会有虚拟网卡docker0，对比VMware会有vmnet0,vmnet8两个网卡，充当交换机？：ens33这个是否是同种道理？：虚拟网卡docker0，vmnet等之后会连上宿主机的网卡，实现虚拟机上网？iptables作用：防火墙，导流：截获容器访问外网的流量，转发到目标外网 k8s网络模型k8s集群中，多个节点情况下，不同节点中的pod通信需要网络插件calico或flannel遵循CNI（存储），CRI（运行）标准 calico不仅支持跨网段，还支持网络隔离 安装好插件还需要一个管理工具calicoctlGitHub找对应版本 三种工作模式：会原理  ipip隧道–跨网段传输 bgp动态路由–同一网段，更低延迟&#x3D;&#x3D;性能提升&#x3D;&#x3D;：当节点小于100个时，使用&#x3D;&#x3D;路由反射器&#x3D;&#x3D;...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/%E5%AD%98%E5%82%A8/" title="存储"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">存储</div></div><div class="info-2"><div class="info-item-1">元数据类型ConfigMapSecret真实数据类型为什么需要 Volume（存储卷） 容器重启丢失数据：容器重建后，会恢复镜像最初状态，日志或生成文件全丢  Pod 内多容器文件隔离：一个 Pod 里的多个容器（如主容器+日志采集Sidecar）默认无法互通文件  节点漂移：Pod 被调度到其他节点后，原来的本地文件就找不到了    核心定律：Volume 是 Pod 级别的资源（先定义 spec.volumes，再在 spec.containers.volumeMounts 里挂载），一个 Pod 可同时挂载多个 Volume  临时&#x2F;本地存储（无持久化或半持久化）emptyDir 用于pod内部多容器文件共享，&#x3D;&#x3D;如为了减小镜像体积，可以将一些启动文件让初始化容器wget下载，再保存到emptyDir中，主容器挂载同一个volume读取&#x3D;&#x3D;  生命周期与pod一致  存储位置为节点临时目录（kubelet管理），最初为空  性能模式：加上medium: &quot;Memory&quot;，会挂载宿主机内存文件系统，读写极快...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/%E6%96%B0k8s%E9%83%A8%E7%BD%B2%E5%85%A8%E6%B5%81%E7%A8%8B/" title="新k8s部署全流程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">新k8s部署全流程</div></div><div class="info-2"><div class="info-item-1">K8s 组件版本推荐   组件 推荐版本 说明    Kubernetes 1.32.x 2026 年 8 月稳定版，文档丰富   containerd 2.3.3 已安装，不用降级；K8s 1.30+ 起官方支持   kubeadm&#x2F;kubelet&#x2F;kubectl 1.32.x 三者版本必须严格一致   Calico 3.29.x 或更新 按 Calico 官方对照表选对应 K8s 1.32 的版本   版本选择原则（面试可讲）：  kubeadm&#x2F;kubelet&#x2F;kubectl 小版本必须一致（如 1.32.x），大版本差 1 以内可容忍 containerd 2.x 已 GA，兼容 K8s 1.30+；学习集群直接保留已安装的 2.3.3 CNI（calico）版本与 K8s 版本对照表看官方文档   每台节点安装步骤（面试核心技能）这是你简历上”手动部署 K8s”的实操部分，每一步都要能讲清为什么。 第一步：加载内核模块 + 设置 sysctl（所有节点）1234567891011121314151617181920# 1. 加载内...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/%E9%85%8D%E7%BD%AE/" title="配置"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">配置</div></div><div class="info-2"><div class="info-item-1">跨服务内部文件一致方法共享（附件缺失：..&#x2F;assets&#x2F;配置&#x2F;Pasted%20image%2020260630104511.png） 共享服务器安装NFS服务，在多个服务所在机器安装NFS客户端，将共享目录挂载到本地目录 每次读取时，都会发生网络IO 没有文件大小限制 注入（附件缺失：..&#x2F;assets&#x2F;配置&#x2F;Pasted%20image%2020260630105215.png） 共享服务器一次注入后，多次读取，不再消耗网络IO 注入到nginx所在服务器本地，读取本地 注入是一次性的，静态的 只有将cm挂载为volume时，才可以热更新，并且环境变量不支持热更新 ConfigMap定义 非敏感的配置数据：环境变量，配置文件  明文形式  不超过1MiB  以注入方式将数据传递给pod   123456789101112k create cm &lt;cm-name&gt; --from-file=hongfu.file# -f后只能跟yaml,json文件# --from-file可以跟任意文件（文本，二进制），...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">TH5EED</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎常来坐坐，听听歌，聊聊天～</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%A3%B8%E9%87%91%E5%B1%9E%E6%9C%8D%E5%8A%A1%E5%99%A8-BMS"><span class="toc-number">1.</span> <span class="toc-text">裸金属服务器 BMS</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#metallb"><span class="toc-number">2.</span> <span class="toc-text">metallb</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9AH3C%E4%BA%A4%E6%8D%A2%E6%9C%BA%E5%A0%86%E5%8F%A0/" title="TODO：H3C交换机堆叠">TODO：H3C交换机堆叠</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TCP%EF%BC%8CUDP/" title="TCP，UDP">TCP，UDP</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9A%E5%B8%B8%E7%94%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" title="TODO：常用网络模式">TODO：常用网络模式</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87/" title="网络设备">网络设备</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/Linux/%E5%AD%98%E5%82%A8%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/LVM/" title="LVM">LVM</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By TH5EED</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.6.1</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.1"></script><script src="/js/main.js?v=5.6.1"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'TH5EED/TH5EED.github.io',
+      'data-repo-id': 'R_kgDORsq4Zw',
+      'data-category-id': 'DIC_kwDORsq4Z84DB7rV',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

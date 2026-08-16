@@ -1,0 +1,290 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>用户登录审计 | TH5EED</title><meta name="author" content="TH5EED"><meta name="copyright" content="TH5EED"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="痕迹命令w查看的是&#x2F;var&#x2F;run&#x2F;utmp  当前系统时间，持续运行时间（天+时分），用户会话数，系统过去1，5，15分钟平均负载（不超过CPU核心数即可） USER用户名，TTY终端设备，FROM登陆来源IP地址，LOGIN@登录时间，IDLE当前会话空闲时间，JCPU该终端累计占用CPU时间，PCPU当前运行进程占用CPU时间，WHAT正在运行的命令   who查看的是&#x2F;var&#x2F;run&#x2F;ut">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用户登录审计">
+<meta property="og:url" content="https://th5eed.github.io/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E5%AE%A1%E8%AE%A1/index.html">
+<meta property="og:site_name" content="TH5EED">
+<meta property="og:description" content="痕迹命令w查看的是&#x2F;var&#x2F;run&#x2F;utmp  当前系统时间，持续运行时间（天+时分），用户会话数，系统过去1，5，15分钟平均负载（不超过CPU核心数即可） USER用户名，TTY终端设备，FROM登陆来源IP地址，LOGIN@登录时间，IDLE当前会话空闲时间，JCPU该终端累计占用CPU时间，PCPU当前运行进程占用CPU时间，WHAT正在运行的命令   who查看的是&#x2F;var&#x2F;run&#x2F;ut">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://th5eed.github.io/img/avatar.jpg">
+<meta property="article:published_time" content="2026-08-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-16T09:22:50.490Z">
+<meta property="article:author" content="TH5EED">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="security">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://th5eed.github.io/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "用户登录审计",
+  "url": "https://th5eed.github.io/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E5%AE%A1%E8%AE%A1/",
+  "image": "https://th5eed.github.io/img/avatar.jpg",
+  "datePublished": "2026-08-15T16:00:00.000Z",
+  "dateModified": "2026-08-16T09:22:50.490Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "TH5EED",
+      "url": "https://TH5EED.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://th5eed.github.io/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E5%AE%A1%E8%AE%A1/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '用户登录审计',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">TH5EED</span></a><a class="nav-page-title" href="/"><span class="site-name">用户登录审计</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">用户登录审计</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-16T09:22:50.490Z" title="更新于 2026-08-16 17:22:50">2026-08-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linux/">Linux</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="痕迹命令"><a href="#痕迹命令" class="headerlink" title="痕迹命令"></a>痕迹命令</h1><h2 id="w"><a href="#w" class="headerlink" title="w"></a>w</h2><p>查看的是<code>/var/run/utmp</code></p>
+<ul>
+<li>当前系统时间，持续运行时间（天+时分），用户会话数，系统过去1，5，15分钟平均负载（不超过CPU核心数即可）</li>
+<li>USER用户名，TTY终端设备，FROM登陆来源IP地址，LOGIN@登录时间，IDLE当前会话空闲时间，JCPU该终端累计占用CPU时间，PCPU当前运行进程占用CPU时间，WHAT正在运行的命令</li>
+</ul>
+<p><img src="/images/Linux/assets/%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/file-20260519093715299.png"></p>
+<h2 id="who"><a href="#who" class="headerlink" title="who"></a>who</h2><p>查看的是<code>/var/run/utmp</code><br>更简单<br><img src="/images/Linux/assets/%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/file-20260519093715290.png"></p>
+<h2 id="last"><a href="#last" class="headerlink" title="last"></a>last</h2><p>查看的是<code>/etc/log/wtmp</code><br>正在登录和以前登录的<br><img src="/images/Linux/assets/%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/file-20260519093715291.png"></p>
+<h2 id="lastlog"><a href="#lastlog" class="headerlink" title="lastlog"></a>lastlog</h2><p>查看的是 <code>/etc/log/lastlog</code><br>查看系统所有用户（包括伪用户）的最后一次登录时间<br><img src="/images/Linux/assets/%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/file-20260519093715281.png"></p>
+<h2 id="lastb"><a href="#lastb" class="headerlink" title="lastb"></a>lastb</h2><p>查看的是 <code>/var/log/btmp</code><br>查看错误登录信息，防止有人爆破破解<br><img src="/images/Linux/assets/%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/file-20260519093715293.png"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://TH5EED.github.io">TH5EED</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://th5eed.github.io/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E5%AE%A1%E8%AE%A1/">https://th5eed.github.io/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E5%AE%A1%E8%AE%A1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://TH5EED.github.io" target="_blank">TH5EED</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/linux/">linux</a><a class="post-meta__tags" href="/tags/security/">security</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/16/Linux/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86/systemd/" title="systemd"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">systemd</div></div><div class="info-2"><div class="info-item-1">介绍是Linux系统中现代的init进程，即1号进程；也是服务管理器  系统启动后第一个运行的进程（PID 1）  管理系统上所有的服务（daemon），比如 sshd、nginx、docker、kubelet 等  提供并行启动、依赖管理、日志记录（journald）、资源控制等功能   systemctl是systemd的用户命令行工具 使用作为 systemd 服务：写一个 .service 文件，由 systemd 负责启动、监控、重启。	例如 kube-proxy.service，然后用 systemctl start kube-proxy 启动。 </div></div></div></a><a class="pagination-related" href="/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86/" title="用户管理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">用户管理</div></div><div class="info-2"><div class="info-item-1">用户管理文件&#x2F;etc&#x2F;passwdroot:x:0:0:Super User:/root:/bin/bash  用户名称，只是方便管理员记忆 x为密码标记，表示有密码，真正存在于/etc/shadow中 UID，用户唯一标识，0为超级用户，可以多个超级用户；0~999为系统用户；后为普通用户 GID（初始组），创建用户后系统自动创建同名的初始组；用户可加入多个附加组 用户说明 家目录 登录后执行的程序，常见&#x2F;bin&#x2F;bash,&#x2F;usr&#x2F;sbin&#x2F;nologin等，如果执行自己编辑的一个脚本，执行后又会回到原用户，所以常见的执行程序是终端bash或sh  影子文件&#x2F;etc&#x2F;shadowabc:!:20567:0:99999:7:::  用户名称，同&#x2F;etc&#x2F;passwd 加密密码，SHA512散列加密，可在前面加入!,*改变加密值；如果没有密码为! 密码上次修改时间，时间戳（1970.1.1后每过一天加一） 两次密码修改间隔时间 密码有效期 密码到期前警告天数，默认7 密码...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86/" title="用户管理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">用户管理</div></div><div class="info-2"><div class="info-item-1">用户管理文件&#x2F;etc&#x2F;passwdroot:x:0:0:Super User:/root:/bin/bash  用户名称，只是方便管理员记忆 x为密码标记，表示有密码，真正存在于/etc/shadow中 UID，用户唯一标识，0为超级用户，可以多个超级用户；0~999为系统用户；后为普通用户 GID（初始组），创建用户后系统自动创建同名的初始组；用户可加入多个附加组 用户说明 家目录 登录后执行的程序，常见&#x2F;bin&#x2F;bash,&#x2F;usr&#x2F;sbin&#x2F;nologin等，如果执行自己编辑的一个脚本，执行后又会回到原用户，所以常见的执行程序是终端bash或sh  影子文件&#x2F;etc&#x2F;shadowabc:!:20567:0:99999:7:::  用户名称，同&#x2F;etc&#x2F;passwd 加密密码，SHA512散列加密，可在前面加入!,*改变加密值；如果没有密码为! 密码上次修改时间，时间戳（1970.1.1后每过一天加一） 两次密码修改间隔时间 密码有效期 密码到期前警告天数，默认7 密码...</div></div></div></a><a class="pagination-related" href="/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/SELinux/" title="SELinux"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">SELinux</div></div><div class="info-2"><div class="info-item-1">配置过于复杂，策略过于严格出现错误时容易影响排查结果 &#x3D;&#x3D;生产环境一般设为Permissive或Disabled，避免因SELinux策略导致服务异常&#x3D;&#x3D; 三种模式   模式 描述    Enforcing 强制执行安全策略，拒绝违规操作   Permissive 记录违规行为但不阻止（用于调试）   Disabled 完全禁用SELinux   相关命令临时切换（重启后失效）123getenforce          # 查看当前模式setenforce 0        # 切换为Permissivesetenforce 1        # 切换为Enforcing  &#x3D;&#x3D;setenforce只能在Enforcing和Permissive之间切换，不能切换到Disabled&#x3D;&#x3D; 永久修改（重启后生效）12345# 编辑配置文件vim /etc/selinux/config# 修改为SELINUX=disabled  &#x3D;&#x3D;Disabled与其他模式互转都需要重启系统&#x3D...</div></div></div></a><a class="pagination-related" href="/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/SSH%E8%AF%A6%E8%A7%A3%E6%95%99%E7%A8%8B/" title="SSH详解教程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">SSH详解教程</div></div><div class="info-2"><div class="info-item-1">SSH 详解：从原理到免密登录实战 适用场景：Linux 服务端（如你的 PVE 宿主机 192.168.31.211）+ 任意客户端（Windows 10&#x2F;11 自带 OpenSSH、Git Bash、PowerShell 7、Linux、macOS）。本文目标：把 SSH 的原理、公私钥体系、免密登录、主机密钥、配置文件、端口转发、常见排错一次讲透。阅读约定：$ 开头是客户端命令，# 开头是服务端命令。   目录 SSH 是什么 底层原理：如何建立安全通道 认证方式总览 公私钥体系（关键词全覆盖） ★ 主机密钥（Host Key）专题 —— 服务器的”身份证” 免密登录实操（step by step） ~/.ssh 目录与配置文件 进阶关键词 安全最佳实践 排错速查   第一章 · SSH 是什么SSH（Secure Shell） 是一种加密的网络协议，用于在不安全的网络上安全地远程登录到另一台计算机并执行命令。 它解决的核心问题：明文协议的窃听与篡改。    协议 传输内容 风险    Telnet &#x2F; rlogin &#x2F; rsh 明文（含密码）...</div></div></div></a><a class="pagination-related" href="/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86/" title="权限管理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">权限管理</div></div><div class="info-2"><div class="info-item-1">权限命令权限作用 文件的写根据文件和上一级目录的block所存储的关系，拥有写权限并不能删除当前文件，除非拥有上一级目录的写权限  目录的执行可以cd   普通用户设置目录权限只有0，5，7这三种可能 两种执行方式的区别   执行方式 文件需要 目录需要    ./script.sh（直接执行） x 权限 所有父目录都要有 x   bash script.sh（解释器执行） r 权限 所有父目录都要有 x   为什么第二种只需要 r？因为 bash script.sh 是让 bash 程序去读取这个文件内容并解释执行，而不是把文件当作二进制程序直接运行。但 bash 本身必须能进入该目录（所以父目录的 x 仍然需要）。 图示123456/              ← 需要 x (root用户默认有，普通用户通常也有)├── home       ← 需要 x│   └── user   ← 需要 x│       └── project ← 需要 x│           └── script.sh ← 需要 x (直接执行) 或 r (解释执行)   chmod421分别代表...</div></div></div></a><a class="pagination-related" href="/2026/08/16/Linux/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86/systemd/" title="systemd"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">systemd</div></div><div class="info-2"><div class="info-item-1">介绍是Linux系统中现代的init进程，即1号进程；也是服务管理器  系统启动后第一个运行的进程（PID 1）  管理系统上所有的服务（daemon），比如 sshd、nginx、docker、kubelet 等  提供并行启动、依赖管理、日志记录（journald）、资源控制等功能   systemctl是systemd的用户命令行工具 使用作为 systemd 服务：写一个 .service 文件，由 systemd 负责启动、监控、重启。	例如 kube-proxy.service，然后用 systemctl start kube-proxy 启动。 </div></div></div></a><a class="pagination-related" href="/2026/08/16/Linux/%E8%BD%AF%E4%BB%B6%E4%B8%8E%E5%8C%85%E7%AE%A1%E7%90%86/%E9%85%8D%E7%BD%AE%E6%9C%AC%E5%9C%B0yum%E6%BA%90/" title="配置本地yum源"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">配置本地yum源</div></div><div class="info-2"><div class="info-item-1">本地yum源介绍让yum包管理器不再尝试去连接那些无法到达的远程仓库，而是直接从本地挂载的ISO镜像文件获取软件包和依赖信息，从而在离线环境中也能顺利完成软件的安装和管理 操作步骤 用系统版本相近的镜像文件作本地yum仓库  创建挂载目录mkdir /mnt/cdrom  将镜像挂载到目录mount /path/to/CentOS-7-x86_64-DVD.iso /mnt/cdrom  备份原仓库，创建本地仓库mkdir /etc/yum.repos.d/bak &amp;&amp; mv /etc/yum.repos.d/*.repo etc/yum.repos.d/bak/  创建并编辑文件vi /etc/yum.repos.d/local.repo   123456789[local-BaseOS]name=local BaseOS# 注意：rocky10版本有两个仓库BaseOS,AppStream，具体要看镜像文件中有几个存放rpm包的目录baseurl=file:///mnt/cdrom/BaseOSenabled=1gpgcheck=1countme=1metad...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">TH5EED</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎常来坐坐，听听歌，聊聊天～</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%97%95%E8%BF%B9%E5%91%BD%E4%BB%A4"><span class="toc-number">1.</span> <span class="toc-text">痕迹命令</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#w"><span class="toc-number">1.1.</span> <span class="toc-text">w</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#who"><span class="toc-number">1.2.</span> <span class="toc-text">who</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#last"><span class="toc-number">1.3.</span> <span class="toc-text">last</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#lastlog"><span class="toc-number">1.4.</span> <span class="toc-text">lastlog</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#lastb"><span class="toc-number">1.5.</span> <span class="toc-text">lastb</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9AH3C%E4%BA%A4%E6%8D%A2%E6%9C%BA%E5%A0%86%E5%8F%A0/" title="TODO：H3C交换机堆叠">TODO：H3C交换机堆叠</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TCP%EF%BC%8CUDP/" title="TCP，UDP">TCP，UDP</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9A%E5%B8%B8%E7%94%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" title="TODO：常用网络模式">TODO：常用网络模式</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87/" title="网络设备">网络设备</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/Linux/%E5%AD%98%E5%82%A8%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/LVM/" title="LVM">LVM</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By TH5EED</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.6.1</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.1"></script><script src="/js/main.js?v=5.6.1"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'TH5EED/TH5EED.github.io',
+      'data-repo-id': 'R_kgDORsq4Zw',
+      'data-category-id': 'DIC_kwDORsq4Z84DB7rV',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

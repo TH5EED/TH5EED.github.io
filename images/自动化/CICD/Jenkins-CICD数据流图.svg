@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 560" font-family="-apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <!-- 背景 -->
+  <rect width="760" height="560" fill="#ffffff"/>
+
+  <!-- 标题 -->
+  <text x="28" y="40" font-size="22" font-weight="700" fill="#1f2937">CI/CD 数据流 — Jenkins 角色定位</text>
+  <text x="28" y="62" font-size="13" fill="#6b7280">本图对应《Jenkins部署》第一步「原理先行」：Jenkins = CI 执行引擎（高亮框）</text>
+
+  <!-- 上游：开发者 + GitLab -->
+  <rect x="28" y="92" width="150" height="54" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="103" y="116" text-anchor="middle" font-size="14" font-weight="600" fill="#4338ca">开发者</text>
+  <text x="103" y="135" text-anchor="middle" font-size="12" fill="#6b7280">git push</text>
+
+  <rect x="220" y="92" width="170" height="54" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="305" y="116" text-anchor="middle" font-size="14" font-weight="600" fill="#047857">GitLab</text>
+  <text x="305" y="135" text-anchor="middle" font-size="12" fill="#6b7280">代码托管 :8929</text>
+
+  <!-- 箭头 开发者 -> GitLab -->
+  <path d="M178 119 H216" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Webhook 触发 -->
+  <text x="410" y="119" font-size="12" fill="#ef4444" font-weight="600">Webhook 触发</text>
+  <path d="M390 119 C 410 119, 410 150, 430 165" stroke="#ef4444" stroke-width="2" fill="none" marker-end="url(#arrowRed)"/>
+
+  <!-- Jenkins 高亮框（核心） -->
+  <rect x="430" y="150" width="302" height="150" rx="12" fill="#fff7ed" stroke="#f97316" stroke-width="2.5"/>
+  <rect x="430" y="150" width="302" height="30" rx="12" fill="#f97316"/>
+  <rect x="430" y="168" width="302" height="12" fill="#f97316"/>
+  <text x="581" y="171" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">Jenkins  ● CI 执行引擎 :8080</text>
+
+  <text x="450" y="208" font-size="12.5" fill="#7c2d12">① 拉码 + 单元测试</text>
+  <text x="450" y="230" font-size="12.5" fill="#7c2d12">② BuildKit 构建镜像</text>
+  <text x="450" y="252" font-size="12.5" fill="#7c2d12">③ 推送 Harbor + Trivy 扫描</text>
+  <text x="450" y="274" font-size="12.5" fill="#7c2d12">④ 更新清单仓库镜像 tag</text>
+
+  <!-- Pipeline 出箭头 -->
+  <path d="M581 300 V 338" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ArgoCD -->
+  <rect x="430" y="338" width="302" height="54" rx="10" fill="#faf5ff" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="581" y="362" text-anchor="middle" font-size="14" font-weight="600" fill="#7e22ce">ArgoCD</text>
+  <text x="581" y="381" text-anchor="middle" font-size="12" fill="#6b7280">检测 diff → 自动 sync</text>
+
+  <path d="M581 392 V 430" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- K8s -->
+  <rect x="430" y="430" width="302" height="54" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="581" y="454" text-anchor="middle" font-size="14" font-weight="600" fill="#1d4ed8">Kubernetes</text>
+  <text x="581" y="473" text-anchor="middle" font-size="12" fill="#6b7280">滚动更新 (master+worker)</text>
+
+  <!-- 左侧辅助系统说明 -->
+  <text x="28" y="158" font-size="12" font-weight="600" fill="#374151">链路上下游</text>
+  <line x1="28" y1="170" x2="200" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+
+  <text x="28" y="195" font-size="12" fill="#6b7280">GitLab → 托管代码（不构建）</text>
+  <text x="28" y="217" font-size="12" fill="#6b7280">Harbor → 存镜像（不跑流水线）</text>
+  <text x="28" y="239" font-size="12" fill="#6b7280">ArgoCD → 管 K8s（不编译）</text>
+  <text x="28" y="261" font-size="12" fill="#6b7280">Jenkins 只做「代码→可部署变更」</text>
+
+  <text x="28" y="300" font-size="12" fill="#9ca3af">构建方式：DooD 挂宿主 docker.sock</text>
+  <text x="28" y="318" font-size="12" fill="#9ca3af">（复用 ci-01 的 Docker 守护）</text>
+
+  <!-- 图例 -->
+  <rect x="28" y="500" width="14" height="14" rx="3" fill="#f97316"/>
+  <text x="48" y="512" font-size="12" fill="#374151">= 本次部署的核心组件</text>
+  <rect x="220" y="500" width="14" height="14" rx="3" fill="#10b981"/>
+  <text x="240" y="512" font-size="12" fill="#374151">= 已就绪（Step 2.4）</text>
+  <rect x="360" y="500" width="14" height="14" rx="3" fill="#a855f7"/>
+  <text x="380" y="512" font-size="12" fill="#374151">= 后续步骤</text>
+
+  <!-- 箭头定义 -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#9ca3af"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#ef4444"/>
+    </marker>
+  </defs>
+</svg>

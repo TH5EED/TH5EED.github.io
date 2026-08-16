@@ -1,0 +1,404 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Service实验 | TH5EED</title><meta name="author" content="TH5EED"><meta name="copyright" content="TH5EED"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="实验：Service 与 Endpoints 综合练习（含 ClusterIP、手动 Endpoints、NodePort）实验目标 理解带 selector 的 Service 自动管理 Endpoints，实现内部负载均衡。 掌握手动创建 Endpoints 将 Service 指向集群外部服务。 理解 port、targetPort、nodePort 的区别与映射关系。 学会用 NodePo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Service实验">
+<meta property="og:url" content="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/Service%E5%AE%9E%E9%AA%8C/index.html">
+<meta property="og:site_name" content="TH5EED">
+<meta property="og:description" content="实验：Service 与 Endpoints 综合练习（含 ClusterIP、手动 Endpoints、NodePort）实验目标 理解带 selector 的 Service 自动管理 Endpoints，实现内部负载均衡。 掌握手动创建 Endpoints 将 Service 指向集群外部服务。 理解 port、targetPort、nodePort 的区别与映射关系。 学会用 NodePo">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://th5eed.github.io/img/avatar.jpg">
+<meta property="article:published_time" content="2026-08-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-16T09:22:50.527Z">
+<meta property="article:author" content="TH5EED">
+<meta property="article:tag" content="cloud-native">
+<meta property="article:tag" content="kubernetes">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://th5eed.github.io/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Service实验",
+  "url": "https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/Service%E5%AE%9E%E9%AA%8C/",
+  "image": "https://th5eed.github.io/img/avatar.jpg",
+  "datePublished": "2026-08-15T16:00:00.000Z",
+  "dateModified": "2026-08-16T09:22:50.527Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "TH5EED",
+      "url": "https://TH5EED.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/Service%E5%AE%9E%E9%AA%8C/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Service实验',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">TH5EED</span></a><a class="nav-page-title" href="/"><span class="site-name">Service实验</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Service实验</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-16T09:22:50.527Z" title="更新于 2026-08-16 17:22:50">2026-08-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/">云原生</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="实验：Service-与-Endpoints-综合练习（含-ClusterIP、手动-Endpoints、NodePort）"><a href="#实验：Service-与-Endpoints-综合练习（含-ClusterIP、手动-Endpoints、NodePort）" class="headerlink" title="实验：Service 与 Endpoints 综合练习（含 ClusterIP、手动 Endpoints、NodePort）"></a>实验：Service 与 Endpoints 综合练习（含 ClusterIP、手动 Endpoints、NodePort）</h1><h2 id="实验目标"><a href="#实验目标" class="headerlink" title="实验目标"></a>实验目标</h2><ol>
+<li>理解带 selector 的 Service 自动管理 Endpoints，实现内部负载均衡。</li>
+<li>掌握手动创建 Endpoints 将 Service 指向集群外部服务。</li>
+<li>理解 <code>port</code>、<code>targetPort</code>、<code>nodePort</code> 的区别与映射关系。</li>
+<li>学会用 NodePort 将服务暴露给集群外部客户端。</li>
+</ol>
+<h2 id="环境要求"><a href="#环境要求" class="headerlink" title="环境要求"></a>环境要求</h2><ul>
+<li>可用的 Kubernetes 集群（minikube 或同类）</li>
+<li><code>kubectl</code>、<code>curl</code>（建议在集群内临时运行 <code>busybox</code> 测试 Pod）</li>
+</ul>
+<hr>
+<h2 id="第一部分：自动关联后端的-Service（内部-Pod）"><a href="#第一部分：自动关联后端的-Service（内部-Pod）" class="headerlink" title="第一部分：自动关联后端的 Service（内部 Pod）"></a>第一部分：自动关联后端的 Service（内部 Pod）</h2><h3 id="1-1-部署后端-Pod"><a href="#1-1-部署后端-Pod" class="headerlink" title="1.1 部署后端 Pod"></a>1.1 部署后端 Pod</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl create deployment myweb --image=nginx --replicas=2</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-暴露为-ClusterIP-Service"><a href="#1-2-暴露为-ClusterIP-Service" class="headerlink" title="1.2 暴露为 ClusterIP Service"></a>1.2 暴露为 ClusterIP Service</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl expose deployment myweb --port=80 --target-port=80</span><br></pre></td></tr></table></figure>
+<p>验证：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl get svc myweb</span><br><span class="line">kubectl get endpoints myweb   <span class="comment"># 应自动显示两个 Pod IP</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="Q：Endpoint-Controller-也是依附于-kube-controller-manager-吗？"><a href="#Q：Endpoint-Controller-也是依附于-kube-controller-manager-吗？" class="headerlink" title="Q：Endpoint Controller 也是依附于 kube-controller-manager 吗？"></a>Q：Endpoint Controller 也是依附于 kube-controller-manager 吗？</h4><h4 id="A"><a href="#A" class="headerlink" title="A"></a>A</h4><p>是的，在expose的背后，endpoint controller在后台监控着标签为myweb的pod的变化，自动写入endpoint对象中。kube-proxy认的就是这个，而非pod本身</p>
+<p><a href="../%E7%BB%84%E4%BB%B6/kube-controller-manager.md">kube-controller-manager</a>进程启动时，多个controller一同被初始化并运行</p>
+<h3 id="1-3-内部访问测试"><a href="#1-3-内部访问测试" class="headerlink" title="1.3 内部访问测试"></a>1.3 内部访问测试</h3><p>运行临时测试 Pod：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl run <span class="built_in">test</span> --image=busybox -it --<span class="built_in">rm</span> --restart=Never -- sh</span><br></pre></td></tr></table></figure>
+<p>在 Pod 内多次执行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget -qO- http://myweb:80</span><br><span class="line"><span class="comment"># 静默，输出到屏幕</span></span><br></pre></td></tr></table></figure>
+<p>观察负载均衡效果（轮询或随机）。</p>
+<hr>
+<h2 id="第二部分：无-selector-Service-手动-Endpoints（引入外部服务）"><a href="#第二部分：无-selector-Service-手动-Endpoints（引入外部服务）" class="headerlink" title="第二部分：无 selector Service + 手动 Endpoints（引入外部服务）"></a>第二部分：无 selector Service + 手动 Endpoints（引入外部服务）</h2><h3 id="2-1-创建不带-selector-的-Service"><a href="#2-1-创建不带-selector-的-Service" class="headerlink" title="2.1 创建不带 selector 的 Service"></a>2.1 创建不带 selector 的 Service</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl create svc clusterip external-httpbin --tcp=80:80</span><br></pre></td></tr></table></figure>
+<p>确认 Endpoints 为空：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get endpoints external-httpbin   <span class="comment"># 显示没有</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="Q：为什么总失败"><a href="#Q：为什么总失败" class="headerlink" title="Q：为什么总失败"></a>Q：为什么总失败</h4><h4 id="A-1"><a href="#A-1" class="headerlink" title="A"></a>A</h4><p>多次实验发现，直接用create命令创建，虽然没指定selector，但只要k get ep发现同名的，即使显示为none，但还是不行</p>
+<p>只有通过去除了selector字段的yaml文件创建，然后再创建ep的yaml文件才可以</p>
+<h3 id="2-2-手动创建-Endpoints（指向外部服务-httpbin-org）"><a href="#2-2-手动创建-Endpoints（指向外部服务-httpbin-org）" class="headerlink" title="2.2 手动创建 Endpoints（指向外部服务 httpbin.org）"></a>2.2 手动创建 Endpoints（指向外部服务 httpbin.org）</h3><p>获取 httpbin.org 的 IP（临时，实验用）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dig +short httpbin.org | <span class="built_in">head</span> -1</span><br></pre></td></tr></table></figure>
+<p>创建 <code>endpoints.yaml</code>：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Endpoints</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">external-httpbin</span>   <span class="comment"># 必须与 Service 同名</span></span><br><span class="line"><span class="attr">subsets:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">addresses:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">ip:</span> <span class="number">54.192</span><span class="number">.255</span><span class="number">.121</span>   <span class="comment"># 替换为实际 IP</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure>
+<p>应用：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f endpoints.yaml</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-验证外部服务访问"><a href="#2-3-验证外部服务访问" class="headerlink" title="2.3 验证外部服务访问"></a>2.3 验证外部服务访问</h3><p>在测试 Pod（busybox）内：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget -qO- http://external-httpbin:80/get</span><br></pre></td></tr></table></figure>
+<p>应返回 httpbin 服务的 JSON 响应。</p>
+<blockquote>
+<p><strong>可选增强</strong>：在宿主机用 <code>docker run -d -p 8888:80 nginx</code> 启动本地容器，将 Endpoints IP 改为宿主机 IP:8888，验证自定义后端。</p>
+</blockquote>
+<h4 id="Q：为什么要手动指定"><a href="#Q：为什么要手动指定" class="headerlink" title="Q：为什么要手动指定"></a>Q：为什么要手动指定</h4><ol>
+<li><p><strong>灰度发布&#x2F;金丝雀发布</strong>：让 Service 同时指向新旧两个版本的 Pod，通过调整权重控制流量比例。</p>
+</li>
+<li><p><strong>跨集群访问</strong>：将另一个 Kubernetes 集群的服务暴露为当前集群的 Service（通过手动维护 Endpoints IP）。</p>
+</li>
+<li><p><strong>外部依赖转内</strong>：将公司内部的非 K8s 服务（如旧版数据库、第三方 API）统一通过 Service 暴露，方便后续迁移</p>
+</li>
+</ol>
+<hr>
+<h2 id="第三部分：理解-targetPort-与端口映射（错误配置演示）"><a href="#第三部分：理解-targetPort-与端口映射（错误配置演示）" class="headerlink" title="第三部分：理解 targetPort 与端口映射（错误配置演示）"></a>第三部分：理解 targetPort 与端口映射（错误配置演示）</h2><h3 id="3-1-修改-Service-的-targetPort-为错误值"><a href="#3-1-修改-Service-的-targetPort-为错误值" class="headerlink" title="3.1 修改 Service 的 targetPort 为错误值"></a>3.1 修改 Service 的 targetPort 为错误值</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl edit svc external-httpbin</span><br></pre></td></tr></table></figure>
+<p>将 <code>targetPort: 80</code> 改为 <code>targetPort: 8080</code>，保存。</p>
+<h3 id="3-2-测试访问失败"><a href="#3-2-测试访问失败" class="headerlink" title="3.2 测试访问失败"></a>3.2 测试访问失败</h3><p>在测试 Pod 内再次访问：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget -qO- http://external-httpbin:80/get</span><br></pre></td></tr></table></figure>
+<p>会超时或连接拒绝（因为后端实际没有监听 8080）。</p>
+<h3 id="3-3-恢复正确配置"><a href="#3-3-恢复正确配置" class="headerlink" title="3.3 恢复正确配置"></a>3.3 恢复正确配置</h3><p>改回 <code>targetPort: 80</code>，恢复访问。</p>
+<p>&#x3D;&#x3D;<strong>结论：<code>targetPort</code> 必须与 Endpoints 中 <code>ports.port</code> 一致。</strong>&#x3D;&#x3D;</p>
+<hr>
+<h2 id="第四部分：NodePort-暴露到集群外部"><a href="#第四部分：NodePort-暴露到集群外部" class="headerlink" title="第四部分：NodePort 暴露到集群外部"></a>第四部分：NodePort 暴露到集群外部</h2><h3 id="4-1-将-myweb-Service-类型改为-NodePort"><a href="#4-1-将-myweb-Service-类型改为-NodePort" class="headerlink" title="4.1 将 myweb Service 类型改为 NodePort"></a>4.1 将 myweb Service 类型改为 NodePort</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl patch svc myweb -p <span class="string">&#x27;&#123;&quot;spec&quot;:&#123;&quot;type&quot;:&quot;NodePort&quot;&#125;&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>或 <code>kubectl edit svc myweb</code> 手动修改。</p>
+<h3 id="4-2-查看-NodePort-端口"><a href="#4-2-查看-NodePort-端口" class="headerlink" title="4.2 查看 NodePort 端口"></a>4.2 查看 NodePort 端口</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get svc myweb</span><br></pre></td></tr></table></figure>
+<p>输出示例：<code>80:31888/TCP</code>，其中 31888 即为 NodePort。</p>
+<h3 id="4-3-获取节点-IP"><a href="#4-3-获取节点-IP" class="headerlink" title="4.3 获取节点 IP"></a>4.3 获取节点 IP</h3><ul>
+<li>minikube：<code>minikube ip</code></li>
+<li>其他集群：<code>kubectl get nodes -o wide</code></li>
+</ul>
+<h3 id="4-4-从集群外部访问"><a href="#4-4-从集群外部访问" class="headerlink" title="4.4 从集群外部访问"></a>4.4 从集群外部访问</h3><p>在宿主机（或集群外机器）执行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl http://&lt;节点IP&gt;:&lt;NodePort&gt;</span><br></pre></td></tr></table></figure>
+<p>例如：<code>curl http://192.168.49.2:31888</code><br>应返回 nginx 默认欢迎页。</p>
+<h3 id="4-5-可选验证（多节点集群）"><a href="#4-5-可选验证（多节点集群）" class="headerlink" title="4.5 可选验证（多节点集群）"></a>4.5 可选验证（多节点集群）</h3><p>如果集群有多个节点，尝试访问不同节点的 NodePort，均能成功转发到后端 Pod。</p>
+<hr>
+<h2 id="清理资源"><a href="#清理资源" class="headerlink" title="清理资源"></a>清理资源</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kubectl delete deployment myweb</span><br><span class="line">kubectl delete svc myweb external-httpbin</span><br><span class="line">kubectl delete endpoints external-httpbin</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="思考题（加深理解）"><a href="#思考题（加深理解）" class="headerlink" title="思考题（加深理解）"></a>思考题（加深理解）</h2><ol>
+<li><strong>带 selector 的 Service 和手动 Endpoints 的 Service 在 kube-proxy 生成的规则上有何区别？</strong></li>
+</ol>
+<p>没有区别，kube-proxy只关注svc的VIP和端口，ep的后端IP列表</p>
+<ol start="2">
+<li><strong>如果手动 Endpoints 中填写的 IP 不存在，curl Service 时报什么错？为什么？</strong></li>
+</ol>
+<p>无法连接该地址</p>
+<ol start="3">
+<li><strong>能否让一个 Service 同时指向内部 Pod 和外部服务？为什么？</strong></li>
+</ol>
+<p>可以但不建议这么做</p>
+<ul>
+<li><p><strong>状态不一致</strong>：内部 Pod 可能是 v2 版本，外部服务是 v1 版本，返回的数据格式可能不一致，导致客户端解析错误。</p>
+</li>
+<li><p><strong>故障域混乱</strong>：内部 Pod 重启 IP 会变（由控制器维护），而外部 IP 是固定的。当内部 Pod 全部宕机时，流量会全部打到外部，造成“雪崩”假象，极难排查故障。</p>
+</li>
+<li><p><strong>没有优雅处理</strong>：您无法控制流量比例（只能随机），无法实现“内部优先，外部备用”的灾备策略。</p>
+</li>
+</ul>
+<ol start="4">
+<li><strong>在 ipvs 模式下，怎样查看 Service 对应的 ipvs 虚拟服务和 real server？</strong></li>
+</ol>
+<p><code>ipvsadm -ln</code></p>
+<ol start="5">
+<li><strong>当访问 NodePort 时，数据包经过了几次 DNAT？画出从客户端到后端 Pod 的路径。</strong></li>
+</ol>
+<p>如果后端服务pod在本机，2次；不在则3次</p>
+<ol start="6">
+<li><strong>NodePort 的默认端口范围是 30000-32767，如何修改？为什么这样设计？</strong></li>
+</ol>
+<p>修改 <code>/etc/kubernetes/manifests/kube-apiserver.yaml</code>，在 <code>spec.containers.command</code> 中添加，修改后 kube-apiserver 会自动重启（静态 Pod）</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> <span class="string">--service-node-port-range=80-32767</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>避开特权端口</strong>：小于 1024 的端口是系统保留端口（如 80, 443），需要 root 权限监听。NodePort 由 kube-proxy 处理，不需要 root，但为了防止普通用户误用系统端口，默认避开这些。</p>
+</li>
+<li><p><strong>避开常见应用端口</strong>：避免与宿主机上已有的 MySQL(3306)、Redis(6379)、Tomcat(8080) 等端口冲突。</p>
+</li>
+</ul>
+<hr>
+<h2 id="实验收获总结"><a href="#实验收获总结" class="headerlink" title="实验收获总结"></a>实验收获总结</h2><ul>
+<li>✅ 掌握 ClusterIP 服务的内部访问与自动 Endpoints 管理</li>
+<li>✅ 理解手动 Endpoints 将流量引入外部服务</li>
+<li>✅ 清楚区分 <code>port</code>、<code>targetPort</code>、<code>nodePort</code> 的作用</li>
+<li>✅ 能够用 NodePort 将服务暴露给外部用户</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://TH5EED.github.io">TH5EED</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/Service%E5%AE%9E%E9%AA%8C/">https://th5eed.github.io/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/Service%E5%AE%9E%E9%AA%8C/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://TH5EED.github.io" target="_blank">TH5EED</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/cloud-native/">cloud-native</a><a class="post-meta__tags" href="/tags/kubernetes/">kubernetes</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/k8s%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B/" title="k8s部署流程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">k8s部署流程</div></div><div class="info-2"><div class="info-item-1">环境初始化更换防火墙规则1234567891011# 关闭firewalldsystemctl stop firewalldsystemctl disable firewalld# 开启iptablesyum -y install iptables-servicessystemctl enable --now iptables# 删除所有规则持久化保存iptables -Fservice iptables save 禁用SELinux添加集群节点映射1234567cat &gt;&gt; /etc/hosts &lt;&lt;EOF# Kubernetes Cluster Nodes10.10.156.239 k8s0110.10.156.240 k8s0210.10.156.241 k8s03EOF  安装ipvsyum install -y ipvsadm 开启路由转发12345# 配置路由转发echo &#x27;net.ipv4.ip_forward=1&#x27; &gt;&gt; /etc/sysctl.conf  # 应用/etc/sysctl.conf中配置sys...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/Service/" title="Service"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Service</div></div><div class="info-2"><div class="info-item-1">为什么引入Service如果没有svc，直接用pod IP通信会遇到： &#x3D;&#x3D;1. Pod IP易变&#x3D;&#x3D;po随时可能消失并被重建，IP地址也会改变，难以硬编码 硬编码直接写死某个信息，无法改变   &#x3D;&#x3D;2. 服务发现困难&#x3D;&#x3D;手动去维护一个易变的后端Pod IP列表不太现实，需要一种方法动态找到提供特定服务的Pod IP &#x3D;&#x3D;3. 负载均衡缺失&#x3D;&#x3D;pod解决的是一个微服务或一个应用的发布问题控制器解决的是批量创建管理一组pod但一组提供相同服务的pod副本，需要一个流量分发入口 将整体服务分成多个独立的小的模块，各自为营   （附件缺失：..&#x2F;assets&#x2F;Service&#x2F;Pasted%20image%2020260609101255.png）（附件缺失：..&#x2F;assets&#x2F;Service&#x2F;Pasted%20image%2020260609101305.png） 核心作用 稳定服务发现Service被创建时...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/kubelet/" title="kubelet"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">kubelet</div></div><div class="info-2"><div class="info-item-1">node在k8s中指一个真实具有含义的API对象，k get nodes可以说明节点一词更为广泛，但一般也同上 一个新的node加入集群很容易：  在节点上安装kubelet、kube-proxy、CRI、CNI 将kubelet、kube-proxy的启动参数中api-server URL指向目标集群的api-server即可 api-server在接受kubelet的注册后，自动将此节点纳入到当前集群的调度范围中  主节点kubelet在集群初始化时、节点kubelet加入集群时需要配置一些参数，比如–cri-socket参数告诉CRI的socket在哪里以此通信 kubelet的注册  kubelet是每个节点上负责启动容器的重要的守护进程  启动时，该进程加载配置参数，向api-server处创建一个node对象来注册自身节点信息：  操作系统 内核版本 IP地址 总容量和可分配容量   定时（默认10s）向api-server汇报节点情况，这些信息会被调度器用来给节点打分  如果停止汇报，NodeLifecycle控制器会认为   </div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/%E7%BB%84%E4%BB%B6%E4%B8%8E%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/" title="组件与进程关系"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">组件与进程关系</div></div><div class="info-2"><div class="info-item-1">k8s进程k8s系统组件，如kube-proxy、api-server、coredns等，本质工作都是进程  宿主机裸进程（传统方式）：直接以systemd服务或可执行文件跑在节点操作系统上。  容器化进程（现代主流）：把进程封装在容器里，再用 Static Pod 或 DaemonSet 来启动和维护。  例如：kube-proxy 在 kubeadm 集群中是以 DaemonSet 形式运行的 Pod，Pod 里只有一个 kube-proxy 进程。  再如：CoreDNS 是一个系统组件（DNS 服务），它以 Deployment 形式运行 Pod，Pod 里是 coredns 进程。     （附件缺失：assets&#x2F;组件与进程关系&#x2F;Pasted%20image%2020260610104914.png） Q：传统方式中的进程是怎么运行的？systemd服务或可执行文件和进程有什么关系？通过systemd服务，它是1号进程，管理维护当前所有服务的状态systemd使用 Q：为什么我的qfusion集群中没找到kube-proxy的pod，是因为关键在于...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/%E8%B5%84%E6%BA%90%E6%B8%85%E5%8D%95/" title="资源清单"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">资源清单</div></div><div class="info-2"><div class="info-item-1">资源 一切皆资源，资源实例化之后叫做对象 不仅node，svc是资源，node（master）也是  资源类别 名称空间级别（po，rs工作负载型；svc，ingress服务发现型，volume存储型） 集群级资源（namespace，node） 元数据型资源（HPA，PodTemplate，LimitRange）  结构 12k explain type xxx(.xx)# 查询xxx资源的api字段和说明文档，包括它的group/version,kind等  接口组&#x2F;版本k api-versions可获得集群所有接口组和版本，不同资源对应不同接口组和版本，注意区分比如：po→(core)&#x2F;v1    rs→app&#x2F;v1等 期望一种声明式的表达 快速创建模板123456k create 资源 资源名 --image=wangyanglinux/myapp:v1.0 --dry-run=client -o yaml&gt; xxx.yaml.tmp# --image 指定容器镜像，仅适用于pod,deployment# --dry-run=clien...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/Pod%E5%88%9B%E5%BB%BA%E5%85%A8%E6%B5%81%E7%A8%8B/" title="Pod创建全流程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">Pod创建全流程</div></div><div class="info-2"><div class="info-item-1">1. 用户请求 用户通过kubectl命令行工具或者api接口向api-server发送一个REST API请求  提交一个pod的定义，通常是yaml文件或json配置文件来描述pod的详细信息，包括容器镜像，环境变量，资源需求，卷挂载等   2.  api server接收请求 用户请求到达apiserver，后者对前者进行认证、鉴权和准入控制——3A检查  3. 持久化存储到etcd 一旦apiserver验证了请求的有效性，会将pod的定义信息写入etcd（分布式键值存储），以确保集群内所有组件都能获取最新的集群状态  此时pod状态为“Pending”   Ｑ：什么是持久化？是否和“以确保集群内所有组件都能获取最新集群状态”有关？难道是持续更新状态？持久化是指确保数据不丢失（写入磁盘中），状态同步是指确保所有组件看到相同数据（通过Watch机制）  多个etcd节点之间同步复制（通过Raft一致性算法） 保证强一致性（所有节点看到相同的数据） etcd有变化时，api server会通过watch机制收到通知，并转化为API事件 组件不需要知道 etcd的存在，只通过a...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E6%B7%B1%E5%85%A5/MetalLB%20%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" title="MetalLB 负载均衡"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">MetalLB 负载均衡</div></div><div class="info-2"><div class="info-item-1">裸金属服务器 BMSBare Metal Server&#x2F;BMS 兼具虚拟机弹性和物理机性能的计算机类服务  用户可灵活申请，按需使用 为核心数据库，关键业务系统，AI等高性能计算提供卓越性能和数据安全 主要提供CPU内存，存储还是用的是云硬盘（方便安装镜像和云备份）  传统云服务弊端  调用硬件资源时归根结底还是性能不如物理服务器 别的租户高负荷时，自己难免受到影响，对稳定需求的应用有影响  裸，意味着不包括操作系统和软件，由客户自选配置 （附件缺失：assets&#x2F;MetalLB%20负载均衡&#x2F;Pasted%20image%2020260720114251.png） metallb</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C/" title="网络"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">网络</div></div><div class="info-2"><div class="info-item-1">核心网络设计原则 所有Pod无需NAT即可直接通信（IP可达） Pod与Node之间也可直接通信 每个Pod拥有独立的IP，且此IP在整个集群全局唯一，可路由  这就被称为扁平网络，即所有Pod像在同一台交换机上 GCE（理想）在Google Compute Engine里，默认支持该原则，无需额外配置网络插件即可满足扁平网络要求 私有云和自建机房（现实）问题所在 各节点处于不同子网或隔离 VLAN 节点间默认不能直接路由 Pod IP Docker 默认用 docker0 网桥（仅本机 Pod 互通，跨节点不通，违反了第一条扁平原则）  解决方案 部署 CNI 插件（如 Calico&#x2F;Cilium&#x2F;Flannel）→ 实现跨节点 Pod 通信  Flannel：用 VXLAN 或 Host-GW 封装 Pod 流量 Calico：用 BGP 或 IPIP 实现三层路由 Cilium：基于 eBPF 实现高性能网络策略与路由   确保网络连通性前置  在启动 kubelet 之前，必须确保 所有节点能互相访问（Node ↔ Node） Pod IP 能在节点间...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">TH5EED</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎常来坐坐，听听歌，聊聊天～</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%EF%BC%9AService-%E4%B8%8E-Endpoints-%E7%BB%BC%E5%90%88%E7%BB%83%E4%B9%A0%EF%BC%88%E5%90%AB-ClusterIP%E3%80%81%E6%89%8B%E5%8A%A8-Endpoints%E3%80%81NodePort%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">实验：Service 与 Endpoints 综合练习（含 ClusterIP、手动 Endpoints、NodePort）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%9B%AE%E6%A0%87"><span class="toc-number">1.1.</span> <span class="toc-text">实验目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E8%A6%81%E6%B1%82"><span class="toc-number">1.2.</span> <span class="toc-text">环境要求</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E9%83%A8%E5%88%86%EF%BC%9A%E8%87%AA%E5%8A%A8%E5%85%B3%E8%81%94%E5%90%8E%E7%AB%AF%E7%9A%84-Service%EF%BC%88%E5%86%85%E9%83%A8-Pod%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">第一部分：自动关联后端的 Service（内部 Pod）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E9%83%A8%E7%BD%B2%E5%90%8E%E7%AB%AF-Pod"><span class="toc-number">1.3.1.</span> <span class="toc-text">1.1 部署后端 Pod</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%9A%B4%E9%9C%B2%E4%B8%BA-ClusterIP-Service"><span class="toc-number">1.3.2.</span> <span class="toc-text">1.2 暴露为 ClusterIP Service</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Q%EF%BC%9AEndpoint-Controller-%E4%B9%9F%E6%98%AF%E4%BE%9D%E9%99%84%E4%BA%8E-kube-controller-manager-%E5%90%97%EF%BC%9F"><span class="toc-number">1.3.2.1.</span> <span class="toc-text">Q：Endpoint Controller 也是依附于 kube-controller-manager 吗？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#A"><span class="toc-number">1.3.2.2.</span> <span class="toc-text">A</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%86%85%E9%83%A8%E8%AE%BF%E9%97%AE%E6%B5%8B%E8%AF%95"><span class="toc-number">1.3.3.</span> <span class="toc-text">1.3 内部访问测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E9%83%A8%E5%88%86%EF%BC%9A%E6%97%A0-selector-Service-%E6%89%8B%E5%8A%A8-Endpoints%EF%BC%88%E5%BC%95%E5%85%A5%E5%A4%96%E9%83%A8%E6%9C%8D%E5%8A%A1%EF%BC%89"><span class="toc-number">1.4.</span> <span class="toc-text">第二部分：无 selector Service + 手动 Endpoints（引入外部服务）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%88%9B%E5%BB%BA%E4%B8%8D%E5%B8%A6-selector-%E7%9A%84-Service"><span class="toc-number">1.4.1.</span> <span class="toc-text">2.1 创建不带 selector 的 Service</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Q%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%80%BB%E5%A4%B1%E8%B4%A5"><span class="toc-number">1.4.1.1.</span> <span class="toc-text">Q：为什么总失败</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#A-1"><span class="toc-number">1.4.1.2.</span> <span class="toc-text">A</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%89%8B%E5%8A%A8%E5%88%9B%E5%BB%BA-Endpoints%EF%BC%88%E6%8C%87%E5%90%91%E5%A4%96%E9%83%A8%E6%9C%8D%E5%8A%A1-httpbin-org%EF%BC%89"><span class="toc-number">1.4.2.</span> <span class="toc-text">2.2 手动创建 Endpoints（指向外部服务 httpbin.org）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E9%AA%8C%E8%AF%81%E5%A4%96%E9%83%A8%E6%9C%8D%E5%8A%A1%E8%AE%BF%E9%97%AE"><span class="toc-number">1.4.3.</span> <span class="toc-text">2.3 验证外部服务访问</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Q%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%89%8B%E5%8A%A8%E6%8C%87%E5%AE%9A"><span class="toc-number">1.4.3.1.</span> <span class="toc-text">Q：为什么要手动指定</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E9%83%A8%E5%88%86%EF%BC%9A%E7%90%86%E8%A7%A3-targetPort-%E4%B8%8E%E7%AB%AF%E5%8F%A3%E6%98%A0%E5%B0%84%EF%BC%88%E9%94%99%E8%AF%AF%E9%85%8D%E7%BD%AE%E6%BC%94%E7%A4%BA%EF%BC%89"><span class="toc-number">1.5.</span> <span class="toc-text">第三部分：理解 targetPort 与端口映射（错误配置演示）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%BF%AE%E6%94%B9-Service-%E7%9A%84-targetPort-%E4%B8%BA%E9%94%99%E8%AF%AF%E5%80%BC"><span class="toc-number">1.5.1.</span> <span class="toc-text">3.1 修改 Service 的 targetPort 为错误值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%B5%8B%E8%AF%95%E8%AE%BF%E9%97%AE%E5%A4%B1%E8%B4%A5"><span class="toc-number">1.5.2.</span> <span class="toc-text">3.2 测试访问失败</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%81%A2%E5%A4%8D%E6%AD%A3%E7%A1%AE%E9%85%8D%E7%BD%AE"><span class="toc-number">1.5.3.</span> <span class="toc-text">3.3 恢复正确配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%E9%83%A8%E5%88%86%EF%BC%9ANodePort-%E6%9A%B4%E9%9C%B2%E5%88%B0%E9%9B%86%E7%BE%A4%E5%A4%96%E9%83%A8"><span class="toc-number">1.6.</span> <span class="toc-text">第四部分：NodePort 暴露到集群外部</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%B0%86-myweb-Service-%E7%B1%BB%E5%9E%8B%E6%94%B9%E4%B8%BA-NodePort"><span class="toc-number">1.6.1.</span> <span class="toc-text">4.1 将 myweb Service 类型改为 NodePort</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%9F%A5%E7%9C%8B-NodePort-%E7%AB%AF%E5%8F%A3"><span class="toc-number">1.6.2.</span> <span class="toc-text">4.2 查看 NodePort 端口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E8%8E%B7%E5%8F%96%E8%8A%82%E7%82%B9-IP"><span class="toc-number">1.6.3.</span> <span class="toc-text">4.3 获取节点 IP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E4%BB%8E%E9%9B%86%E7%BE%A4%E5%A4%96%E9%83%A8%E8%AE%BF%E9%97%AE"><span class="toc-number">1.6.4.</span> <span class="toc-text">4.4 从集群外部访问</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E5%8F%AF%E9%80%89%E9%AA%8C%E8%AF%81%EF%BC%88%E5%A4%9A%E8%8A%82%E7%82%B9%E9%9B%86%E7%BE%A4%EF%BC%89"><span class="toc-number">1.6.5.</span> <span class="toc-text">4.5 可选验证（多节点集群）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B8%85%E7%90%86%E8%B5%84%E6%BA%90"><span class="toc-number">1.7.</span> <span class="toc-text">清理资源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%9D%E8%80%83%E9%A2%98%EF%BC%88%E5%8A%A0%E6%B7%B1%E7%90%86%E8%A7%A3%EF%BC%89"><span class="toc-number">1.8.</span> <span class="toc-text">思考题（加深理解）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E6%94%B6%E8%8E%B7%E6%80%BB%E7%BB%93"><span class="toc-number">1.9.</span> <span class="toc-text">实验收获总结</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9AH3C%E4%BA%A4%E6%8D%A2%E6%9C%BA%E5%A0%86%E5%8F%A0/" title="TODO：H3C交换机堆叠">TODO：H3C交换机堆叠</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TCP%EF%BC%8CUDP/" title="TCP，UDP">TCP，UDP</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9A%E5%B8%B8%E7%94%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" title="TODO：常用网络模式">TODO：常用网络模式</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87/" title="网络设备">网络设备</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/Linux/%E5%AD%98%E5%82%A8%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/LVM/" title="LVM">LVM</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By TH5EED</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.6.1</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.1"></script><script src="/js/main.js?v=5.6.1"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'TH5EED/TH5EED.github.io',
+      'data-repo-id': 'R_kgDORsq4Zw',
+      'data-category-id': 'DIC_kwDORsq4Z84DB7rV',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

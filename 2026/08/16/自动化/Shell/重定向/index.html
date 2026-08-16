@@ -1,0 +1,302 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>重定向 | TH5EED</title><meta name="author" content="TH5EED"><meta name="copyright" content="TH5EED"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="地基每个进程启动时有三个默认“数据流”：stdin 标准输入stdout 标准输出stderr 标准错误 重定向和管道的本质就是把某个数据流转接到别处 cat &lt;&lt;EOF ... EOF（不加文件名参数）就是在正常的读写中当一个搬运工，所以就是一个显示在屏幕上的工具，数据该写在哪该是写在哪 |管道是将左边命令的标准输出接到右边命令的标准输入中去 tee从标准输入中读，然后分叉写入标准输">
+<meta property="og:type" content="article">
+<meta property="og:title" content="重定向">
+<meta property="og:url" content="https://th5eed.github.io/2026/08/16/%E8%87%AA%E5%8A%A8%E5%8C%96/Shell/%E9%87%8D%E5%AE%9A%E5%90%91/index.html">
+<meta property="og:site_name" content="TH5EED">
+<meta property="og:description" content="地基每个进程启动时有三个默认“数据流”：stdin 标准输入stdout 标准输出stderr 标准错误 重定向和管道的本质就是把某个数据流转接到别处 cat &lt;&lt;EOF ... EOF（不加文件名参数）就是在正常的读写中当一个搬运工，所以就是一个显示在屏幕上的工具，数据该写在哪该是写在哪 |管道是将左边命令的标准输出接到右边命令的标准输入中去 tee从标准输入中读，然后分叉写入标准输">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://th5eed.github.io/img/avatar.jpg">
+<meta property="article:published_time" content="2026-08-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-16T09:22:50.575Z">
+<meta property="article:author" content="TH5EED">
+<meta property="article:tag" content="automation">
+<meta property="article:tag" content="shell">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://th5eed.github.io/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "重定向",
+  "url": "https://th5eed.github.io/2026/08/16/%E8%87%AA%E5%8A%A8%E5%8C%96/Shell/%E9%87%8D%E5%AE%9A%E5%90%91/",
+  "image": "https://th5eed.github.io/img/avatar.jpg",
+  "datePublished": "2026-08-15T16:00:00.000Z",
+  "dateModified": "2026-08-16T09:22:50.575Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "TH5EED",
+      "url": "https://TH5EED.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://th5eed.github.io/2026/08/16/%E8%87%AA%E5%8A%A8%E5%8C%96/Shell/%E9%87%8D%E5%AE%9A%E5%90%91/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '重定向',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">TH5EED</span></a><a class="nav-page-title" href="/"><span class="site-name">重定向</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">重定向</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-16T09:22:50.575Z" title="更新于 2026-08-16 17:22:50">2026-08-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%87%AA%E5%8A%A8%E5%8C%96/">自动化</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="地基"><a href="#地基" class="headerlink" title="地基"></a>地基</h1><p>每个进程启动时有三个默认“数据流”：<br>stdin 标准输入<br>stdout 标准输出<br>stderr 标准错误</p>
+<p><strong>重定向和管道的本质就是把某个数据流转接到别处</strong></p>
+<p><code>cat &lt;&lt;EOF ... EOF</code>（不加文件名参数）就是在正常的读写中当一个搬运工，所以就是一个显示在屏幕上的工具，数据该写在哪该是写在哪</p>
+<p><code>|</code>管道是将左边命令的标准输出接到右边命令的标准输入中去</p>
+<p><code>tee</code>从标准输入中读，然后<strong>分叉</strong>写入标准输出和屏幕中去</p>
+<h1 id="cat-EOF-…-EOF"><a href="#cat-EOF-…-EOF" class="headerlink" title="cat &lt;&lt; EOF … EOF"></a>cat &lt;&lt; EOF … EOF</h1><p>讲接下来的键盘输入（直到遇到EOF标记）传给cat</p>
+<p>优于echo，用于打印大段信息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">cat &lt;&lt; EOF</span><br><span class="line">one</span><br><span class="line">two</span><br><span class="line">three</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<p>执行该脚本后</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">one</span><br><span class="line">two</span><br><span class="line">three</span><br></pre></td></tr></table></figure>
+
+<h1 id="结合-快速写入配置文件（覆盖-追加）"><a href="#结合-快速写入配置文件（覆盖-追加）" class="headerlink" title="结合&gt;快速写入配置文件（覆盖&#x2F;追加）"></a>结合&gt;快速写入配置文件（覆盖&#x2F;追加）</h1><p>不变的还是<br>cat &lt;&lt; EOF<br>…<br>EOF<br>只不过中间有了<code>&gt; file.conf</code> 或<code>&gt;&gt; file.conf</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 覆盖写入（&gt;）</span></span><br><span class="line"><span class="built_in">cat</span> &gt; my.conf &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">server_name=localhost</span></span><br><span class="line"><span class="string">port=8080</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 追加写入（&gt;&gt;）</span></span><br><span class="line"><span class="built_in">cat</span> &gt;&gt; my.conf &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">new_key=new_value</span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
+
+
+<h1 id="EOF带引号防止内容转义"><a href="#EOF带引号防止内容转义" class="headerlink" title="EOF带引号防止内容转义"></a>EOF带引号防止内容转义</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cat &lt;&lt; &#x27;EOF&#x27;</span><br><span class="line">...</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<p>这样可以将里面的$ &#x2F;等符号不当做变量展开</p>
+<h1 id="合并多个文件"><a href="#合并多个文件" class="headerlink" title="合并多个文件"></a>合并多个文件</h1><p><code>cat a.txt b.txt &gt; all.txt</code></p>
+<h1 id="清空文件（不删除）"><a href="#清空文件（不删除）" class="headerlink" title="清空文件（不删除）"></a>清空文件（不删除）</h1><p><code>cat /dev/null &gt; huge.log</code><br>比rm快，且不影响正在写入的进程，<strong>用于清空日志</strong></p>
+<h2 id="在终端上直接创建文件（不用EOF-）"><a href="#在终端上直接创建文件（不用EOF-）" class="headerlink" title="在终端上直接创建文件（不用EOF ）"></a>在终端上直接创建文件（不用EOF ）</h2><p>输入<code> cat &gt; 1.txt</code>，然后ctrl+d结束</p>
+<h1 id="tee"><a href="#tee" class="headerlink" title="tee"></a>tee</h1></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://TH5EED.github.io">TH5EED</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://th5eed.github.io/2026/08/16/%E8%87%AA%E5%8A%A8%E5%8C%96/Shell/%E9%87%8D%E5%AE%9A%E5%90%91/">https://th5eed.github.io/2026/08/16/%E8%87%AA%E5%8A%A8%E5%8C%96/Shell/%E9%87%8D%E5%AE%9A%E5%90%91/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://TH5EED.github.io" target="_blank">TH5EED</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/automation/">automation</a><a class="post-meta__tags" href="/tags/shell/">shell</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/16/%E4%BA%91%E5%8E%9F%E7%94%9F/Kubernetes/%E5%88%9D%E7%BA%A7/Helm/" title="Helm"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Helm</div></div><div class="info-2"><div class="info-item-1">介绍 go语言编写，github下载  是k8s的类yum的包管理工具  通过打包的方式，支持发布的版本管理和控制，简化了应用的部署和管理  本质是让应用管理可配置，动态生成   重要概念 Chart  是创建一个应用的信息集合，包括各种对象的配置模板、参数定义、依赖关系、文档说明等，  chart是应用部署的自包含逻辑单元，可以将chart想象成apt、yum中的软件  Release  是chart 的运行实例，代表了一个正在运行的应用，  当chart被安装到Kubernetes集群，就生成一个release，  chart能够多次安装到同一个集群，每次安装都是一个release  Helm cli  helm客户端组件，负责和kubernetes apiS通信  Repository  用于发布和存储 Chart的仓库   安装及演示安装12345678# 下载安装脚本curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3# 添加可执行权限c...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E8%87%AA%E5%8A%A8%E5%8C%96/Shell/%E8%84%9A%E6%9C%AC%E8%BF%9B%E5%BA%A6/" title="脚本进度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">脚本进度</div></div><div class="info-2"><div class="info-item-1">个人迷惑 source &#x2F;etc&#x2F;os-release啥意思，遇到键值对文本可以直接用？  纯文本需要文本三剑客  获取IP到底用什么命令？hostname -i 容易获得127.0.0.1hostname -I 不好拿主IP可能会有docker网卡，虚拟网卡   如果看配置文件，不同版本目录位置不通用，配置不等于正在用的 ip -4 addr showip -4 -o addr show scope global | awk &#39;{print $4}&#39; | cut -d/ -f1 | head -1 注意：仍然没搞懂到时候业务环境怎么区分业务网卡，集群网卡，管理网卡 豪华版文档规模与性质总结这份 QFusion v4.1.3 安装前检查文档，我梳理出 14 个核心检查项，分三大类：    类别 检查项 特殊条件    服务关闭 NetworkManager、SELinux、firewalld、swap、auditd、时间时区 auditd 仅 ARM 麒麟；NetworkManager 仅 CentOS 7   环境检查 操作系统版本、内核版本...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/16/%E8%87%AA%E5%8A%A8%E5%8C%96/Shell/%E9%A1%B9%E7%9B%AE%EF%BC%9A%E5%AE%89%E8%A3%85%E5%89%8D%E6%A3%80%E6%9F%A5%E9%A1%B9/precheck.sh%E5%AE%8C%E6%95%B4%E8%AE%B2%E8%A7%A3/" title="precheck.sh完整讲解"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">precheck.sh完整讲解</div></div><div class="info-2"><div class="info-item-1">第 0 步：先认识”脚本”本身知识点 1：Shebang（脚本头）1#!/bin/bash 这是脚本的第一行，意思是”用 /bin/bash 这个程序来解释执行我后面的内容”。#! 叫 shebang。没有它，系统不知道用哪个 shell 来跑。 知识点 2：注释# 开头到行尾都是注释，机器忽略，给人看的。脚本里大段的 # ==== 和说明文字都是注释。  第 1 步：变量（脚本的”容器”）知识点 3：变量赋值与引用12SCRIPT_DIR=&quot;$(cd &quot;$(dirname &quot;$&#123;BASH_SOURCE[0]&#125;&quot;)&quot; &amp;&amp; pwd)&quot;APPLY_MODE=&quot;false&quot;  变量名=值（等号两边不能留空格，A = 1 是错的）。 用 $变量名 或 ${变量名} 取它的值。脚本里大量用 ${LIB_DIR}/base.sh 这种拼路径。 ${} 比 $ 更安全，能加花括号避免歧义、还能做”字符串加工”（后面会讲）。  知识点 4：命令替换 $(...)$(命令) 表示”...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E8%87%AA%E5%8A%A8%E5%8C%96/Shell/%E8%84%9A%E6%9C%AC%E8%BF%9B%E5%BA%A6/" title="脚本进度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">脚本进度</div></div><div class="info-2"><div class="info-item-1">个人迷惑 source &#x2F;etc&#x2F;os-release啥意思，遇到键值对文本可以直接用？  纯文本需要文本三剑客  获取IP到底用什么命令？hostname -i 容易获得127.0.0.1hostname -I 不好拿主IP可能会有docker网卡，虚拟网卡   如果看配置文件，不同版本目录位置不通用，配置不等于正在用的 ip -4 addr showip -4 -o addr show scope global | awk &#39;{print $4}&#39; | cut -d/ -f1 | head -1 注意：仍然没搞懂到时候业务环境怎么区分业务网卡，集群网卡，管理网卡 豪华版文档规模与性质总结这份 QFusion v4.1.3 安装前检查文档，我梳理出 14 个核心检查项，分三大类：    类别 检查项 特殊条件    服务关闭 NetworkManager、SELinux、firewalld、swap、auditd、时间时区 auditd 仅 ARM 麒麟；NetworkManager 仅 CentOS 7   环境检查 操作系统版本、内核版本...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E8%87%AA%E5%8A%A8%E5%8C%96/Shell/%E9%A1%B9%E7%9B%AE%EF%BC%9A%E5%AE%89%E8%A3%85%E5%89%8D%E6%A3%80%E6%9F%A5%E9%A1%B9/work%20buddy%E4%BA%A4%E6%8E%A5/" title="work buddy交接"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">work buddy交接</div></div><div class="info-2"><div class="info-item-1">太好了，能帮上忙我也很开心。你问的其实是两件事:(1) 这台设备上怎么继续;(2) 设备还公司后,怎么把”学习设定”带到家里的 WorkBuddy。我分开说,最后给你一段能直接复制走的”前置记忆”文本。 先顺手把你的学习偏好记进当前机器的长期记忆(虽然本机要还,但按规则该记),然后给你可携带的版本。 让我先把偏好写进用户级记忆文件:记好了。下面正式回答你的两个问题。  一、在当前这台设备&#x2F;项目里，怎么继续让我讲下一个脚本?不用复杂操作,两步就行:  把脚本整体复制进对话(直接粘贴全文,或告诉我文件路径让我读)。 加一句触发语,比如任选其一: 「像之前教我读 precheck.sh 那样,循序渐进地讲解这个脚本」 「用上次的方式,按理解顺序把这个 shell 脚本的知识点拆开教我」 「把这个脚本用到的所有 shell 知识点讲一遍,每个都要说在脚本里怎么用」    我就知道你要的是那种带流程图 + 逐知识点 + 贴代码片段的讲法,会自动复用同样的风格。  小提醒:如果下一个脚本像 precheck.sh 一样依赖其他文件(比如它调用了 check_selinux、get_...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E8%87%AA%E5%8A%A8%E5%8C%96/Shell/%E9%A1%B9%E7%9B%AE%EF%BC%9A%E5%AE%89%E8%A3%85%E5%89%8D%E6%A3%80%E6%9F%A5%E9%A1%B9/%E9%A1%B9%E7%9B%AE%E8%B7%AF%E7%BA%BF/" title="项目路线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">项目路线</div></div><div class="info-2"><div class="info-item-1">Precheck 项目学习路线图 目标：面试时能讲清楚架构、能复现某个检查项的完整链路、能回答追问   知识全景图本项目涉及的知识点，按面试出现概率分为三级： 1234567891011121314151617181920212223242526272829┌─────────────────────────────────────────────────────┐│  🔴 必须掌握（面试必问，讲不清楚会扣分）              ││                                                     ││  ① 为什么分四层？每层职责是什么？                     ││  ② 一个检查项从入口到输出的完整调用链                  ││  ③ 配置文件怎么控制行为（enabled/action）             ││  ④ --apply 模式的修复流程和幂等性设计                 ││  ⑤ set -e 的坑 + 三个实际踩过的 bug                  │...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E8%87%AA%E5%8A%A8%E5%8C%96/Shell/%E4%B8%AA%E4%BA%BAshell%E7%AC%94%E8%AE%B0/" title="个人shell笔记"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">个人shell笔记</div></div><div class="info-2"><div class="info-item-1">shell执行脚本的几种方式   方式 新进程? 需 x 权限 变量&#x2F;函数保留到父 shell cd 影响父 shell 脚本里 exit 后果 $0 ${BASH_SOURCE[0]}    ./script.sh 是 是 否 否 只退子进程 ./script.sh ./script.sh   bash script.sh 是 否 否 否 只退子进程 script.sh script.sh   sh script.sh 是 否 否 否 只退子进程 script.sh 可能不支持   source script.sh 否 否 是 是 关闭终端 外层脚本名 script.sh   . script.sh 否 否 是 是 关闭终端 外层脚本名 script.sh   set -euxo pipefail 怎么”看执行过程”这四个是一组防御+调试开关,常写在所有脚本开头:    开关 作用    -e 任意命令返回非 0(出错)就立刻退出脚本,防止错误被忽略后继续乱跑   -u 用到未定义的变量直接报错退出,避免拼错变量名变成空值悄悄出错   -x 把每条命令执行前先打印出来...</div></div></div></a><a class="pagination-related" href="/2026/08/16/%E8%87%AA%E5%8A%A8%E5%8C%96/Git/%E5%88%86%E6%94%AF%E7%AE%A1%E7%90%86/" title="分支管理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-16</div><div class="info-item-2">分支管理</div></div><div class="info-2"><div class="info-item-1">常用命令12345678910111213141516# 查看当前所处分支git statusgit branch --show-current# 查看所有分支git branch# 查看所有分支，包括远程git branch -a# 创建并切换到新分支git checkout -b &lt;new-branch&gt;# 切换分支git switch &lt;branch&gt;git chechout &lt;branch&gt;</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">TH5EED</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎常来坐坐，听听歌，聊聊天～</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9C%B0%E5%9F%BA"><span class="toc-number">1.</span> <span class="toc-text">地基</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#cat-EOF-%E2%80%A6-EOF"><span class="toc-number">2.</span> <span class="toc-text">cat &lt;&lt; EOF … EOF</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BB%93%E5%90%88-%E5%BF%AB%E9%80%9F%E5%86%99%E5%85%A5%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%EF%BC%88%E8%A6%86%E7%9B%96-%E8%BF%BD%E5%8A%A0%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">结合&gt;快速写入配置文件（覆盖&#x2F;追加）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#EOF%E5%B8%A6%E5%BC%95%E5%8F%B7%E9%98%B2%E6%AD%A2%E5%86%85%E5%AE%B9%E8%BD%AC%E4%B9%89"><span class="toc-number">4.</span> <span class="toc-text">EOF带引号防止内容转义</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%88%E5%B9%B6%E5%A4%9A%E4%B8%AA%E6%96%87%E4%BB%B6"><span class="toc-number">5.</span> <span class="toc-text">合并多个文件</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B8%85%E7%A9%BA%E6%96%87%E4%BB%B6%EF%BC%88%E4%B8%8D%E5%88%A0%E9%99%A4%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">清空文件（不删除）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8%E7%BB%88%E7%AB%AF%E4%B8%8A%E7%9B%B4%E6%8E%A5%E5%88%9B%E5%BB%BA%E6%96%87%E4%BB%B6%EF%BC%88%E4%B8%8D%E7%94%A8EOF-%EF%BC%89"><span class="toc-number">6.1.</span> <span class="toc-text">在终端上直接创建文件（不用EOF ）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#tee"><span class="toc-number">7.</span> <span class="toc-text">tee</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9AH3C%E4%BA%A4%E6%8D%A2%E6%9C%BA%E5%A0%86%E5%8F%A0/" title="TODO：H3C交换机堆叠">TODO：H3C交换机堆叠</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TCP%EF%BC%8CUDP/" title="TCP，UDP">TCP，UDP</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9A%E5%B8%B8%E7%94%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" title="TODO：常用网络模式">TODO：常用网络模式</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87/" title="网络设备">网络设备</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/Linux/%E5%AD%98%E5%82%A8%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/LVM/" title="LVM">LVM</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By TH5EED</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.6.1</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.1"></script><script src="/js/main.js?v=5.6.1"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'TH5EED/TH5EED.github.io',
+      'data-repo-id': 'R_kgDORsq4Zw',
+      'data-category-id': 'DIC_kwDORsq4Z84DB7rV',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

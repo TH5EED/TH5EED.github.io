@@ -1,0 +1,219 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>TH5EED</title><meta name="author" content="TH5EED"><meta name="copyright" content="TH5EED"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta property="og:type" content="website">
+<meta property="og:title" content="TH5EED">
+<meta property="og:url" content="https://th5eed.github.io/page/2/index.html">
+<meta property="og:site_name" content="TH5EED">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://th5eed.github.io/img/avatar.jpg">
+<meta property="article:author" content="TH5EED">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://th5eed.github.io/img/avatar.jpg"><script type="application/ld+json"></script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://th5eed.github.io/page/2/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'TH5EED',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'home'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="full_page" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">TH5EED</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-compact-disc"></i><span> 分享</span></a></div><div class="menus_item"><a class="site-page" href="/message/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="site-info"><h1 id="site-title">TH5EED</h1></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts nc" id="recent-posts"><div class="recent-post-items"><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/Linux/%E5%AD%98%E5%82%A8%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86%E5%91%BD%E4%BB%A4/" title="磁盘管理命令">磁盘管理命令</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span></div><div class="content">磁盘查看lsblklist block devices，列出所有块设备信息 12lsblklsblk -f   # 显示文件系统类型、UUID、挂载点  lsblk -f跟blkid都可以看到UUID号 输出字段：  设备名称 主设备号:次设备号（主设备号标识设备类型，次设备号标识同类型中的具体设备） 大小 readonly 只读 设备类型（disk磁盘 &#x2F; part分区 &#x2F; lvm逻辑卷等） 挂载点     主设备类型 主设备号    loop 7   sr 11   sd 8   vd 252-254   lvm 253   blkid查看设备的UUID、文件系统类型等属性 12blkidblkid /dev/sda1  &#x3D;&#x3D;UUID是设备的唯一标识，/etc/fstab中推荐用UUID而非设备名，因为设备名可能因插入顺序变化而改变&#x3D;&#x3D; df见系统监控与信息 du见系统监控与信息 分区工具fdiskMBR分区表工具，交互式 123fdisk -l                    # 列出所有磁盘分区信息fdis...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/SELinux/" title="SELinux">SELinux</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span></div><div class="content">配置过于复杂，策略过于严格出现错误时容易影响排查结果 &#x3D;&#x3D;生产环境一般设为Permissive或Disabled，避免因SELinux策略导致服务异常&#x3D;&#x3D; 三种模式   模式 描述    Enforcing 强制执行安全策略，拒绝违规操作   Permissive 记录违规行为但不阻止（用于调试）   Disabled 完全禁用SELinux   相关命令临时切换（重启后失效）123getenforce          # 查看当前模式setenforce 0        # 切换为Permissivesetenforce 1        # 切换为Enforcing  &#x3D;&#x3D;setenforce只能在Enforcing和Permissive之间切换，不能切换到Disabled&#x3D;&#x3D; 永久修改（重启后生效）12345# 编辑配置文件vim /etc/selinux/config# 修改为SELINUX=disabled  &#x3D;&#x3D;Disabled与其他模式互转都需要重启系统&#x3D...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/Linux/%E5%AD%98%E5%82%A8%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/%E7%B3%BB%E7%BB%9F%E5%88%86%E5%8C%BA/" title="系统分区">系统分区</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span></div><div class="content">Windows也适用 选择分区表MBR与GPT 文件系统定义管理数据存储和检索的软件模块，本质是一种数据结构，负责组织，存储和检索文件 必须构建在传统分区或逻辑卷之上 常见   文件系统 描述    ext4 是 ext3 文件系统的升级版。在性能、伸缩性和可靠性方面大幅改进；支持最大 1EB 文件系统和 16TB 单个文件；是 CentOS 6.x 的默认文件系统。   Btrfs 2007 年由 Oracle 发布；因写入性能不稳定、成熟度不足，实用性受限；Rocky Linux 9.x 虽支持，但官方不推荐生产环境使用。   XFS 高性能日志型文件系统，2000 年左右并入 Linux 内核；支持最大 18EB 文件系统和 9EB 单个文件；是 CentOS 7.x 及后续版本（RHEL 7+）的默认文件系统。   swap 用于内存交换的特殊文件系统（非存储数据）；当物理内存不足时，将部分内存页暂存到磁盘；建议大小为 RAM 的 1~2 倍（实验环境下要≤2GB）；是 Linux 启动必需分区。   iso9660 光盘（CD&#x2F;DVD&#x2F;Blu-ray...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86/" title="用户管理">用户管理</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span></div><div class="content">用户管理文件&#x2F;etc&#x2F;passwdroot:x:0:0:Super User:/root:/bin/bash  用户名称，只是方便管理员记忆 x为密码标记，表示有密码，真正存在于/etc/shadow中 UID，用户唯一标识，0为超级用户，可以多个超级用户；0~999为系统用户；后为普通用户 GID（初始组），创建用户后系统自动创建同名的初始组；用户可加入多个附加组 用户说明 家目录 登录后执行的程序，常见&#x2F;bin&#x2F;bash,&#x2F;usr&#x2F;sbin&#x2F;nologin等，如果执行自己编辑的一个脚本，执行后又会回到原用户，所以常见的执行程序是终端bash或sh  影子文件&#x2F;etc&#x2F;shadowabc:!:20567:0:99999:7:::  用户名称，同&#x2F;etc&#x2F;passwd 加密密码，SHA512散列加密，可在前面加入!,*改变加密值；如果没有密码为! 密码上次修改时间，时间戳（1970.1.1后每过一天加一） 两次密码修改间隔时间 密码有效期 密码到期前警告天数，默认7 密码...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E5%AE%A1%E8%AE%A1/" title="用户登录审计">用户登录审计</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span></div><div class="content">痕迹命令w查看的是/var/run/utmp  当前系统时间，持续运行时间（天+时分），用户会话数，系统过去1，5，15分钟平均负载（不超过CPU核心数即可） USER用户名，TTY终端设备，FROM登陆来源IP地址，LOGIN@登录时间，IDLE当前会话空闲时间，JCPU该终端累计占用CPU时间，PCPU当前运行进程占用CPU时间，WHAT正在运行的命令   who查看的是/var/run/utmp更简单 last查看的是/etc/log/wtmp正在登录和以前登录的 lastlog查看的是 /etc/log/lastlog查看系统所有用户（包括伪用户）的最后一次登录时间 lastb查看的是 /var/log/btmp查看错误登录信息，防止有人爆破破解 </div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/Linux/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86/systemd/" title="systemd">systemd</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span></div><div class="content">介绍是Linux系统中现代的init进程，即1号进程；也是服务管理器  系统启动后第一个运行的进程（PID 1）  管理系统上所有的服务（daemon），比如 sshd、nginx、docker、kubelet 等  提供并行启动、依赖管理、日志记录（journald）、资源控制等功能   systemctl是systemd的用户命令行工具 使用作为 systemd 服务：写一个 .service 文件，由 systemd 负责启动、监控、重启。	例如 kube-proxy.service，然后用 systemctl start kube-proxy 启动。 </div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/SSH%E8%AF%A6%E8%A7%A3%E6%95%99%E7%A8%8B/" title="SSH详解教程">SSH详解教程</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span></div><div class="content">SSH 详解：从原理到免密登录实战 适用场景：Linux 服务端（如你的 PVE 宿主机 192.168.31.211）+ 任意客户端（Windows 10&#x2F;11 自带 OpenSSH、Git Bash、PowerShell 7、Linux、macOS）。本文目标：把 SSH 的原理、公私钥体系、免密登录、主机密钥、配置文件、端口转发、常见排错一次讲透。阅读约定：$ 开头是客户端命令，# 开头是服务端命令。   目录 SSH 是什么 底层原理：如何建立安全通道 认证方式总览 公私钥体系（关键词全覆盖） ★ 主机密钥（Host Key）专题 —— 服务器的”身份证” 免密登录实操（step by step） ~/.ssh 目录与配置文件 进阶关键词 安全最佳实践 排错速查   第一章 · SSH 是什么SSH（Secure Shell） 是一种加密的网络协议，用于在不安全的网络上安全地远程登录到另一台计算机并执行命令。 它解决的核心问题：明文协议的窃听与篡改。    协议 传输内容 风险    Telnet &#x2F; rlogin &#x2F; rsh 明文（含密码）...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/Linux/%E5%AE%89%E5%85%A8%E4%B8%8E%E8%BF%9C%E7%A8%8B/%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86/" title="权限管理">权限管理</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span></div><div class="content">权限命令权限作用 文件的写根据文件和上一级目录的block所存储的关系，拥有写权限并不能删除当前文件，除非拥有上一级目录的写权限  目录的执行可以cd   普通用户设置目录权限只有0，5，7这三种可能 两种执行方式的区别   执行方式 文件需要 目录需要    ./script.sh（直接执行） x 权限 所有父目录都要有 x   bash script.sh（解释器执行） r 权限 所有父目录都要有 x   为什么第二种只需要 r？因为 bash script.sh 是让 bash 程序去读取这个文件内容并解释执行，而不是把文件当作二进制程序直接运行。但 bash 本身必须能进入该目录（所以父目录的 x 仍然需要）。 图示123456/              ← 需要 x (root用户默认有，普通用户通常也有)├── home       ← 需要 x│   └── user   ← 需要 x│       └── project ← 需要 x│           └── script.sh ← 需要 x (直接执行) 或 r (解释执行)   chmod421分别代表...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/Linux/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86/%E5%B8%A6%E5%A4%96%E7%B3%BB%E7%BB%9F/" title="带外系统">带外系统</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span></div><div class="content">介绍带外管理平台依托于服务器自带的BMC芯片BMC芯片是一个有着自己的处理器，内存，系统的小型电脑 BMC有专用直通网口，不经过服务器CPU和OS所以即使服务器关机，只要插电，BMC经过电流，就可以进入到带外系统进行管理 有带外IP，可以登录到web页面 设置业务IP进入BIOS&#x2F;UEFI系统 通过显示器连接服务器 开机进入BIOS 修改IP等信息  BIOS&#x2F;UEFI关系UEFI支持GPT，现在大多数都用UEFI，因为历史习惯问题，大家还是叫BIOS设置 通过笔记本修改IP直连网线 显示器连接看到带外IP 将自己带到机房的笔记本改IP为同网段，避免IP冲突 网线直连，浏览器访问带外IP  性能设置电源最大性能 风扇最大化 超线程 numaenable代表关闭 内存性能最大化当 system profile为performence（性能）模式，默认直接最大性能，custom为个人习惯模式 做硬raid 可能一些服务器需要补充操作：初始化 装系统启动项 映像文件 冷重启服务器 F11进入BOOT menu 选择虚拟光驱启动 安装设置 重启后记得把启动项改为正常启...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/08/16/Linux/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86/%E6%97%B6%E9%97%B4%E5%90%8C%E6%AD%A5%E6%9C%8D%E5%8A%A1/" title="时间同步服务">时间同步服务</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span></div><div class="content">为节点配置稳定的外部时间同步服务（chrony&#x2F;ntpd），避免因时间漂移影响集群稳定性 timedatectl chrony ntp时间同步服务 Linux时间子系统概述两类时钟 系统时钟：操作系统内核维护的软件时钟，决定系统当前时间  硬件时钟RTC(real time clock)：主板上的独立硬件时钟，由电池供电，关机后仍能走时   时间漂移 系统启动时从RTC读取时间初始化当前系统时钟 之后系统时钟独立运行 由于晶振频率偏差，温度变化等，系统时钟逐渐产生时间漂移  后果 在单机环境中，时间误差  在集群环境中，各节点漂移方向和幅度不同，会导致日志时间错乱、分布式事务失败、证书验证异常等一系列问题   NTPNetwork Time Protocol，网络时间协议通过分层的时间源结构，让各节点持续与权威时间源校准 stratum表示一台机器到权威时间源的跳数，越小越权威  0：最高精度时间源，无法通过网络访问，如原子钟，GPS时钟等 1：直连跳数为0，也就是最高精度的时间源的时间服务器 2：直连跳数为1的时间服务器 16：以此类推，最高到16，表示未同步状态  ...</div></div></div></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/"><i class="fas fa-chevron-left fa-fw"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/#content-inner">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/#content-inner">14</a><a class="extend next" rel="next" href="/page/3/#content-inner"><i class="fas fa-chevron-right fa-fw"></i></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">TH5EED</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎常来坐坐，听听歌，聊聊天～</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9AH3C%E4%BA%A4%E6%8D%A2%E6%9C%BA%E5%A0%86%E5%8F%A0/" title="TODO：H3C交换机堆叠">TODO：H3C交换机堆叠</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TCP%EF%BC%8CUDP/" title="TCP，UDP">TCP，UDP</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/TODO%EF%BC%9A%E5%B8%B8%E7%94%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" title="TODO：常用网络模式">TODO：常用网络模式</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87/" title="网络设备">网络设备</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/Linux/%E5%AD%98%E5%82%A8%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/LVM/" title="LVM">LVM</a><time datetime="2026-08-15T16:00:00.000Z" title="发表于 2026-08-16 00:00:00">2026-08-16</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>分类</span>
+            
+          </div>
+          <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Linux/"><span class="card-category-list-name">Linux</span><span class="card-category-list-count">41</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/"><span class="card-category-list-name">中间件</span><span class="card-category-list-count">3</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/"><span class="card-category-list-name">云原生</span><span class="card-category-list-count">49</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E4%BD%9C%E6%88%98%E5%AE%A4/"><span class="card-category-list-name">作战室</span><span class="card-category-list-count">3</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"><span class="card-category-list-name">数据库</span><span class="card-category-list-count">13</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%AE%89%E5%85%A8/"><span class="card-category-list-name">网络与安全</span><span class="card-category-list-count">5</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E8%87%AA%E5%8A%A8%E5%8C%96/"><span class="card-category-list-name">自动化</span><span class="card-category-list-count">24</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E9%9D%A2%E7%BB%8F/"><span class="card-category-list-name">面经</span><span class="card-category-list-count">1</span></a></li>
+          </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/linux/" style="font-size: 1.47em; color: #99a8bc">linux</a> <a href="/tags/monitoring/" style="font-size: 1.17em; color: #999c9f">monitoring</a> <a href="/tags/docker/" style="font-size: 1.33em; color: #99a2af">docker</a> <a href="/tags/%E8%99%9A%E6%8B%9F%E5%8C%96/" style="font-size: 1.1em; color: #999">虚拟化</a> <a href="/tags/redis/" style="font-size: 1.1em; color: #999">redis</a> <a href="/tags/ansible/" style="font-size: 1.1em; color: #999">ansible</a> <a href="/tags/network-security/" style="font-size: 1.2em; color: #999da3">network-security</a> <a href="/tags/Harbor/" style="font-size: 1.1em; color: #999">Harbor</a> <a href="/tags/sql-server/" style="font-size: 1.1em; color: #999">sql server</a> <a href="/tags/storage/" style="font-size: 1.3em; color: #99a1ac">storage</a> <a href="/tags/%E7%A7%8B%E6%8B%9B/" style="font-size: 1.1em; color: #999">秋招</a> <a href="/tags/cli/" style="font-size: 1.33em; color: #99a2af">cli</a> <a href="/tags/package/" style="font-size: 1.17em; color: #999c9f">package</a> <a href="/tags/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" style="font-size: 1.1em; color: #999">负载均衡</a> <a href="/tags/system/" style="font-size: 1.3em; color: #99a1ac">system</a> <a href="/tags/rocketmq/" style="font-size: 1.13em; color: #999a9c">rocketmq</a> <a href="/tags/mysql/" style="font-size: 1.1em; color: #999">mysql</a> <a href="/tags/nginx/" style="font-size: 1.1em; color: #999">nginx</a> <a href="/tags/dockerfile/" style="font-size: 1.1em; color: #999">dockerfile</a> <a href="/tags/CI-CD/" style="font-size: 1.23em; color: #999ea6">CI/CD</a> <a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" style="font-size: 1.1em; color: #999">中间件</a> <a href="/tags/Jenkins/" style="font-size: 1.1em; color: #999">Jenkins</a> <a href="/tags/%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/" style="font-size: 1.1em; color: #999">反向代理</a> <a href="/tags/%E9%9D%A2%E8%AF%95/" style="font-size: 1.1em; color: #999">面试</a> <a href="/tags/containerd/" style="font-size: 1.23em; color: #999ea6">containerd</a> <a href="/tags/GitLab/" style="font-size: 1.1em; color: #999">GitLab</a> <a href="/tags/security/" style="font-size: 1.23em; color: #999ea6">security</a> <a href="/tags/automation/" style="font-size: 1.43em; color: #99a6b9">automation</a> <a href="/tags/Linux/" style="font-size: 1.1em; color: #999">Linux</a> <a href="/tags/strategy/" style="font-size: 1.13em; color: #999a9c">strategy</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E6%8E%92%E6%9F%A5/" style="font-size: 1.1em; color: #999">网络排查</a> <a href="/tags/%E6%8C%87%E6%8E%8C%E6%98%93/" style="font-size: 1.1em; color: #999">指掌易</a> <a href="/tags/postgresql/" style="font-size: 1.1em; color: #999">postgresql</a> <a href="/tags/DooD/" style="font-size: 1.1em; color: #999">DooD</a> <a href="/tags/%E8%81%8C%E4%B8%9A%E8%A7%84%E5%88%92/" style="font-size: 1.1em; color: #999">职业规划</a> <a href="/tags/cloud-native/" style="font-size: 1.5em; color: #99a9bf">cloud-native</a> <a href="/tags/shell/" style="font-size: 1.27em; color: #99a0a9">shell</a> <a href="/tags/vastbase/" style="font-size: 1.37em; color: #99a4b2">vastbase</a> <a href="/tags/database/" style="font-size: 1.4em; color: #99a5b6">database</a> <a href="/tags/%E9%9D%A2%E7%BB%8F/" style="font-size: 1.1em; color: #999">面经</a></div></div><div class="card-widget card-archives">
+    <div class="item-headline">
+      <i class="fas fa-archive"></i>
+      <span>归档</span>
+      
+    </div>
+  
+    <ul class="card-archive-list">
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/08/">
+            <span class="card-archive-list-date">
+              八月 2026
+            </span>
+            <span class="card-archive-list-count">138</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/07/">
+            <span class="card-archive-list-date">
+              七月 2026
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+    </ul>
+  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站信息</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">139</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总浏览量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-08-16T14:29:58.687Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By TH5EED</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.6.1</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.1"></script><script src="/js/main.js?v=5.6.1"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
